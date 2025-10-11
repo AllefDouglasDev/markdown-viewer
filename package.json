@@ -5,12 +5,12 @@
   "description": "Lightweight Electron app for live Markdown preview from CLI with auto-reload, emoji support, and syntax highlighting",
   "repository": {
     "type": "git",
-    "url": "https://github.com/allefdouglascruz/markdown-electron-viewer.git"
+    "url": "git@github.com:AllefDouglasDev/markdown-viewer.git"
   },
   "bugs": {
-    "url": "https://github.com/allefdouglascruz/markdown-electron-viewer/issues"
+    "url": "https://github.com/AllefDouglasDev/markdown-viewer/issues"
   },
-  "homepage": "https://github.com/allefdouglascruz/markdown-electron-viewer#readme",
+  "homepage": "https://github.com/AllefDouglasDev/markdown-viewer#readme",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",

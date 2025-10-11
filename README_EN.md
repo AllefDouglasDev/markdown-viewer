@@ -23,8 +23,8 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/markdown-electron-viewer.git
-cd markdown-electron-viewer
+git clone git@github.com:AllefDouglasDev/markdown-viewer.git
+cd markdown-viewer
 
 # Install dependencies
 npm install

@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+const { spawn } = require('child_process');
+const path = require('path');
+
+// Get the file path argument
+const filePath = process.argv[2];
+
+if (!filePath) {
+  console.error('Usage: md <file.md>');
+  process.exit(1);
+}
+
+// Get the path to the Electron executable
+const electronPath = require('electron');
+const appPath = path.join(__dirname, '..');
+
+// Launch Electron with the file path
+const child = spawn(electronPath, [appPath, filePath], {
+  stdio: 'inherit',
+  detached: false,
+});
+
+child.on('close', (code) => {
+  process.exit(code);
+});

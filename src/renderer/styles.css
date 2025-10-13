@@ -191,3 +191,90 @@ body {
 .error h2 {
   margin-bottom: 16px;
 }
+
+/* Mermaid chart styles */
+.mermaid-chart {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #2d2d2d;
+  border-radius: 6px;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mermaid-chart svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Override mermaid default styles for dark theme */
+.mermaid-chart .node rect,
+.mermaid-chart .node circle,
+.mermaid-chart .node ellipse,
+.mermaid-chart .node polygon {
+  fill: #3c3c3c !important;
+  stroke: #58a6ff !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-chart .node .label {
+  color: #d4d4d4 !important;
+  fill: #d4d4d4 !important;
+}
+
+.mermaid-chart .edgePath .path {
+  stroke: #58a6ff !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid-chart .edgeLabel {
+  background-color: #2d2d2d !important;
+  color: #d4d4d4 !important;
+  fill: #d4d4d4 !important;
+}
+
+.mermaid-chart .cluster rect {
+  fill: #252525 !important;
+  stroke: #3c3c3c !important;
+}
+
+.mermaid-chart .cluster text {
+  fill: #d4d4d4 !important;
+}
+
+.mermaid-chart .actor {
+  fill: #3c3c3c !important;
+  stroke: #58a6ff !important;
+}
+
+.mermaid-chart .messageLine0,
+.mermaid-chart .messageLine1 {
+  stroke: #58a6ff !important;
+}
+
+.mermaid-chart .messageText {
+  fill: #d4d4d4 !important;
+  stroke: none !important;
+}
+
+.mermaid-chart .labelBox {
+  fill: #2d2d2d !important;
+  stroke: #3c3c3c !important;
+}
+
+.mermaid-chart .labelText {
+  fill: #d4d4d4 !important;
+}
+
+.mermaid-chart .loopText,
+.mermaid-chart .loopLine,
+.mermaid-chart .note {
+  fill: #3c3c3c !important;
+  stroke: #58a6ff !important;
+}
+
+.mermaid-chart .noteText {
+  fill: #d4d4d4 !important;
+}

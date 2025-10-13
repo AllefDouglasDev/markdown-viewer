@@ -14,12 +14,18 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
-    "build": "electron-builder",
     "webpack": "webpack",
     "webpack:watch": "webpack --watch",
     "test": "electron . example.md",
     "prepare": "webpack",
-    "update": "npm run webpack && echo 'Global link updated! Run: md <file.md>'"
+    "update": "npm run webpack && echo 'Global link updated! Run: md <file.md>'",
+    "prebuild": "npm run webpack",
+    "build": "electron-builder",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder -mwl",
+    "release": "npm run prebuild && electron-builder --publish always"
   },
   "bin": {
     "md": "./bin/md"
@@ -59,11 +65,80 @@
   },
   "dependencies": {
     "chokidar": "^4.0.3",
+    "electron-updater": "^6.6.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "rehype-highlight": "^7.0.2",
     "remark-gemoji": "^8.0.0",
     "remark-gfm": "^4.0.1"
+  },
+  "build": {
+    "appId": "com.allef.markdown-viewer",
+    "productName": "Markdown Viewer",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "dist/**/*",
+      "src/main/**/*",
+      "bin/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "build/icon.icns"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Development",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "AllefDouglasDev",
+      "repo": "markdown-viewer"
+    }
   }
 }

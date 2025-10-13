@@ -6,11 +6,12 @@ Este é um arquivo de exemplo para testar o renderer.
 
 ### Texto primeiro
 
-Texto normal, **negrito**, *itálico*, ~~tachado~~.
+Texto normal, **negrito**, _itálico_, ~~tachado~~.
 
 ### Listas
 
 Lista não ordenada:
+
 - Item 1
 - Item 2
 - Item 3
@@ -18,6 +19,7 @@ Lista não ordenada:
   - Subitem 2.2
 
 Lista ordenada:
+
 1. Primeiro
 2. Segundo
 3. Terceiro
@@ -61,7 +63,7 @@ print(fibonacci(10))
 ### Tabelas
 
 | Coluna 1 | Coluna 2 | Coluna 3 |
-|----------|----------|----------|
+| -------- | -------- | -------- |
 | A        | B        | C        |
 | 1        | 2        | 3        |
 | X        | Y        | Z        |
@@ -85,3 +87,56 @@ Emojis com códigos shortcode:
 :coffee: :computer: :books: :bulb: :warning: :heavy_check_mark:
 
 Emojis nativos também funcionam: 🚀 ✨ 🔥 🎉
+
+### Diagramas Mermaid
+
+#### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER ||--o{ CATEGORY : has
+
+    CUSTOMER {
+        string name
+        string email
+        string phone
+    }
+
+    ORDER {
+        string status
+    }
+
+    LINE-ITEM {
+        int quantity
+        decimal price
+    }
+
+    CATEGORY {
+        string id
+        string name
+        bool is_active
+    }
+```
+
+#### Class Diagram
+
+```mermaid
+classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +String breed
+        +bark()
+    }
+    class Cat {
+        +String color
+        +meow()
+    }
+    Animal <|-- Dog
+    Animal <|-- Cat
+```

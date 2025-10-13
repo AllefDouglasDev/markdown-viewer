@@ -29,7 +29,7 @@ module.exports = {
     ],
   },
   resolve: {
-    extensions: ['.js', '.jsx'],
+    extensions: ['.js', '.jsx', '.mjs'],
     fallback: {
       "path": require.resolve("path-browserify"),
       "process": require.resolve("process/browser"),
@@ -37,6 +37,7 @@ module.exports = {
       "fs": false,
       "buffer": false,
     },
+    fullySpecified: false,
   },
   externals: {
     // Prevent webpack from bundling these Node.js modules

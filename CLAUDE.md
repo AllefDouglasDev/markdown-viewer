@@ -14,6 +14,7 @@ Electron application for rendering Markdown files with live reload. Invoked from
 - **remark-gfm**: GitHub Flavored Markdown support
 - **remark-gemoji**: Emoji shortcode support (`:rocket:` → 🚀)
 - **rehype-highlight**: Syntax highlighting for code blocks
+- **Mermaid 11**: Diagram and chart rendering (loaded via CDN)
 - **chokidar**: Reliable cross-platform file watching
 - **Webpack 5**: Bundler for renderer process
 
@@ -43,15 +44,16 @@ md example.md
 ```
 src/
 ├── main/
-│   ├── index.js     # Electron main process, CLI args, file watching
-│   └── preload.js   # IPC bridge (contextBridge)
+│   ├── index.js       # Electron main process, CLI args, file watching
+│   └── preload.js     # IPC bridge (contextBridge)
 └── renderer/
-    ├── index.html   # HTML template
-    ├── index.jsx    # React entry point
-    ├── App.jsx      # Main component with markdown state
-    └── styles.css   # Dark theme styles
+    ├── index.html     # HTML template with Mermaid CDN
+    ├── index.jsx      # React entry point
+    ├── App.jsx        # Main component with markdown state
+    ├── MermaidChart.jsx # Mermaid diagram renderer component
+    └── styles.css     # Dark theme styles
 bin/
-└── md               # CLI wrapper script
+└── md                 # CLI wrapper script
 ```
 
 ## Architecture
@@ -106,7 +108,31 @@ vim.keymap.set('n', '<leader>mp', ':!md %<CR>', { desc = 'Markdown Preview' })
 - GitHub Flavored Markdown (tables, task lists, strikethrough)
 - Emoji support with shortcodes (`:rocket:` → 🚀)
 - Syntax highlighting for code blocks (highlight.js)
+- **Mermaid diagram support** (flowcharts, sequence diagrams, class diagrams, state diagrams, Gantt charts, pie charts, git graphs, ER diagrams)
 - Visual update indicator (shows "✓ Updated at [time]" when file changes)
 - Dark theme optimized for readability
 - Secure IPC with context isolation
 - File path displayed in header
+
+## Mermaid Diagrams
+
+To create a Mermaid diagram in your Markdown file, use a code block with the `mermaid` language identifier:
+
+\`\`\`mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action]
+    B -->|No| D[End]
+\`\`\`
+
+Supported diagram types:
+- **Flowcharts**: `graph TD`, `graph LR`
+- **Sequence Diagrams**: `sequenceDiagram`
+- **Class Diagrams**: `classDiagram`
+- **State Diagrams**: `stateDiagram-v2`
+- **Gantt Charts**: `gantt`
+- **Pie Charts**: `pie`
+- **Git Graphs**: `gitGraph`
+- **Entity Relationship Diagrams**: `erDiagram`
+
+See `mermaid-example.md` for comprehensive examples of all diagram types.

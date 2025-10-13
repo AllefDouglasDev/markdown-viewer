@@ -1,11 +1,16 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
+const { autoUpdater } = require('electron-updater');
 
 let mainWindow;
 let filePath = null;
 let fileWatcher = null;
+
+// Configure auto-updater
+autoUpdater.logger = console;
+autoUpdater.autoDownload = false; // Don't auto-download, ask user first
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -94,6 +99,70 @@ function watchFile(filePath) {
   });
 }
 
+// Auto-updater event handlers
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info.version);
+
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Available',
+    message: `A new version ${info.version} is available. Do you want to download it now?`,
+    buttons: ['Yes', 'No']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.downloadUpdate();
+    }
+  });
+});
+
+autoUpdater.on('update-not-available', () => {
+  console.log('No updates available');
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  console.log(`Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`);
+
+  if (mainWindow) {
+    mainWindow.setProgressBar(progressObj.percent / 100);
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info.version);
+
+  if (mainWindow) {
+    mainWindow.setProgressBar(-1); // Remove progress bar
+  }
+
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Ready',
+    message: `Version ${info.version} has been downloaded. Restart the application to apply the update?`,
+    buttons: ['Restart', 'Later']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall();
+    }
+  });
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Update error:', err);
+});
+
+function checkForUpdates() {
+  // Don't check for updates in development mode
+  if (process.argv.includes('--dev')) {
+    console.log('Skipping update check in development mode');
+    return;
+  }
+
+  console.log('Checking for updates...');
+  autoUpdater.checkForUpdates().catch(err => {
+    console.log('Update check failed:', err);
+  });
+}
+
 app.whenReady().then(() => {
   // Get file path from command line arguments
   const args = process.argv.slice(1);
@@ -116,6 +185,11 @@ app.whenReady().then(() => {
   }
 
   createWindow();
+
+  // Check for updates after window is created (wait 3 seconds)
+  setTimeout(() => {
+    checkForUpdates();
+  }, 3000);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

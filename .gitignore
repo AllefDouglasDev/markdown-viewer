@@ -4,8 +4,14 @@ package-lock.json
 
 # Build output
 dist/
-build/
 out/
+
+# Keep build folder for icons, but ignore everything except icons and README
+build/*
+!build/README.md
+!build/*.icns
+!build/*.ico
+!build/*.png
 
 # Electron builder output
 release/

@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkGemoji from 'remark-gemoji';
 import rehypeHighlight from 'rehype-highlight';
+import MermaidChart from './MermaidChart';
 import './styles.css';
 
 function App() {
@@ -78,6 +79,24 @@ function App() {
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkGemoji]}
           rehypePlugins={[rehypeHighlight]}
+          components={{
+            code({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '');
+              const lang = match ? match[1] : null;
+
+              // Check if it's a mermaid code block
+              if (!inline && lang === 'mermaid') {
+                return <MermaidChart chart={String(children).replace(/\n$/, '')} />;
+              }
+
+              // Default code rendering
+              return (
+                <code className={className} {...props}>
+                  {children}
+                </code>
+              );
+            },
+          }}
         >
           {markdown}
         </ReactMarkdown>

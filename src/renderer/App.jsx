@@ -14,16 +14,12 @@ function App() {
   const [lastUpdated, setLastUpdated] = useState(null);
 
   useEffect(() => {
-    // Load initial markdown file
     loadMarkdownFile();
 
-    // Listen for file updates
     window.electronAPI.onMarkdownUpdated((content) => {
-      console.log('File updated! Reloading markdown...');
       setMarkdown(content);
       setLastUpdated(new Date().toLocaleTimeString());
 
-      // Clear the update indicator after 2 seconds
       setTimeout(() => setLastUpdated(null), 2000);
     });
   }, []);
@@ -84,12 +80,10 @@ function App() {
               const match = /language-(\w+)/.exec(className || '');
               const lang = match ? match[1] : null;
 
-              // Check if it's a mermaid code block
               if (!inline && lang === 'mermaid') {
                 return <MermaidChart chart={String(children).replace(/\n$/, '')} />;
               }
 
-              // Default code rendering
               return (
                 <code className={className} {...props}>
                   {children}

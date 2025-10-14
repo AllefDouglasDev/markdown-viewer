@@ -17,10 +17,10 @@ const appPath = path.join(__dirname, '..');
 
 // Launch Electron with the file path
 const child = spawn(electronPath, [appPath, filePath], {
-  stdio: 'inherit',
-  detached: false,
+  stdio: 'ignore',
+  detached: true,
 });
 
-child.on('close', (code) => {
-  process.exit(code);
-});
+child.unref();
+
+process.exit(0);

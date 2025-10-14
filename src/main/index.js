@@ -8,15 +8,14 @@ let mainWindow;
 let filePath = null;
 let fileWatcher = null;
 
-// Configure auto-updater
 autoUpdater.logger = console;
-autoUpdater.autoDownload = false; // Don't auto-download, ask user first
+autoUpdater.autoDownload = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    show: false, // Don't show until ready
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -24,31 +23,19 @@ function createWindow() {
     },
   });
 
-  // Show window when ready
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  // In development, load from webpack-dev-server
-  // In production, load the built file
   const isDev = process.argv.includes('--dev');
 
   if (isDev) {
     mainWindow.loadURL('http://localhost:8080');
     mainWindow.webContents.openDevTools();
   } else {
-    // Load from dist directory (webpack output)
     const distPath = path.join(__dirname, '../../dist/index.html');
-    console.log('Loading file from:', distPath);
-    mainWindow.loadFile(distPath).catch(err => {
-      console.error('Failed to load file:', err);
-    });
+    mainWindow.loadFile(distPath);
   }
-
-  // Debug: log when window is shown
-  mainWindow.on('show', () => {
-    console.log('Window is now visible');
-  });
 
   mainWindow.on('closed', () => {
     if (fileWatcher) {
@@ -68,14 +55,10 @@ function loadMarkdownFile(filePath) {
 }
 
 function watchFile(filePath) {
-  // Close previous watcher if exists
   if (fileWatcher) {
     fileWatcher.close();
   }
 
-  console.log('Watching file for changes:', filePath);
-
-  // Watch for file changes using chokidar (more reliable than fs.watch)
   fileWatcher = chokidar.watch(filePath, {
     persistent: true,
     ignoreInitial: true,
@@ -86,23 +69,14 @@ function watchFile(filePath) {
   });
 
   fileWatcher.on('change', () => {
-    console.log('File changed! Reloading content...');
     const result = loadMarkdownFile(filePath);
     if (result.success && mainWindow) {
       mainWindow.webContents.send('markdown-updated', result.content);
-      console.log('Content sent to renderer');
     }
-  });
-
-  fileWatcher.on('error', (error) => {
-    console.error('Watcher error:', error);
   });
 }
 
-// Auto-updater event handlers
 autoUpdater.on('update-available', (info) => {
-  console.log('Update available:', info.version);
-
   dialog.showMessageBox(mainWindow, {
     type: 'info',
     title: 'Update Available',
@@ -116,22 +90,17 @@ autoUpdater.on('update-available', (info) => {
 });
 
 autoUpdater.on('update-not-available', () => {
-  console.log('No updates available');
 });
 
 autoUpdater.on('download-progress', (progressObj) => {
-  console.log(`Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`);
-
   if (mainWindow) {
     mainWindow.setProgressBar(progressObj.percent / 100);
   }
 });
 
 autoUpdater.on('update-downloaded', (info) => {
-  console.log('Update downloaded:', info.version);
-
   if (mainWindow) {
-    mainWindow.setProgressBar(-1); // Remove progress bar
+    mainWindow.setProgressBar(-1);
   }
 
   dialog.showMessageBox(mainWindow, {
@@ -147,46 +116,32 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 autoUpdater.on('error', (err) => {
-  console.error('Update error:', err);
 });
 
 function checkForUpdates() {
-  // Don't check for updates in development mode
   if (process.argv.includes('--dev')) {
-    console.log('Skipping update check in development mode');
     return;
   }
 
-  console.log('Checking for updates...');
-  autoUpdater.checkForUpdates().catch(err => {
-    console.log('Update check failed:', err);
-  });
+  autoUpdater.checkForUpdates();
 }
 
 app.whenReady().then(() => {
-  // Get file path from command line arguments
   const args = process.argv.slice(1);
-  console.log('Command line args:', args);
 
   const fileArg = args.find(arg => !arg.startsWith('--') && arg.endsWith('.md'));
 
   if (fileArg) {
     filePath = path.resolve(fileArg);
-    console.log('Markdown file to load:', filePath);
 
-    // Check if file exists
     if (!fs.existsSync(filePath)) {
-      console.error('Error: File not found:', filePath);
       app.quit();
       return;
     }
-  } else {
-    console.log('No markdown file specified');
   }
 
   createWindow();
 
-  // Check for updates after window is created (wait 3 seconds)
   setTimeout(() => {
     checkForUpdates();
   }, 3000);
@@ -204,7 +159,6 @@ app.on('window-all-closed', () => {
   }
 });
 
-// IPC handlers
 ipcMain.handle('get-markdown-file', () => {
   if (!filePath) {
     return { success: false, error: 'No file path provided' };

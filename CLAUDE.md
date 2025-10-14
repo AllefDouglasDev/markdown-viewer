@@ -136,3 +136,8 @@ Supported diagram types:
 - **Entity Relationship Diagrams**: `erDiagram`
 
 See `mermaid-example.md` for comprehensive examples of all diagram types.
+
+**IMPORTANT**
+
+- **NEVER** add comments to the code
+- **NEVER** add comments to the code unless explicitly requested

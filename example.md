@@ -17,6 +17,7 @@ Lista não ordenada:
 - Item 3
   - Subitem 2.1
   - Subitem 2.2
+- Item 4
 
 Lista ordenada:
 
@@ -136,6 +137,7 @@ classDiagram
     class Cat {
         +String color
         +meow()
+test str
     }
     Animal <|-- Dog
     Animal <|-- Cat

@@ -14,18 +14,45 @@ body {
 .container {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
 }
 
 .header {
-  padding: 20px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: #1e1e1e;
   border-bottom: 1px solid #3c3c3c;
-  margin-bottom: 30px;
+  padding: 12px 20px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header.collapsed {
+  padding: 8px;
+  background-color: rgba(30, 30, 30, 0.95);
+}
+
+.header-toggle {
+  background-color: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  color: #d4d4d4;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.header-toggle:hover {
+  background-color: #3c3c3c;
+  border-color: #58a6ff;
 }
 
 .file-path {
@@ -35,6 +62,14 @@ body {
   word-break: break-all;
   flex: 1;
   min-width: 0;
+}
+
+.markdown-content {
+  padding: 80px 20px 20px;
+}
+
+.header.collapsed + .markdown-content {
+  padding-top: 50px;
 }
 
 .update-indicator {
@@ -60,6 +95,8 @@ body {
 
 .markdown-content {
   line-height: 1.6;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .markdown-content h1,

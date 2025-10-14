@@ -5,6 +5,7 @@ local temp_file = nil
 local timer = nil
 local buf_augroup = nil
 local debug_mode = false
+local real_file_path = nil
 
 function M.debug(enable)
   debug_mode = enable
@@ -39,11 +40,18 @@ end
 
 local function write_buffer_to_file(bufnr, filepath)
   local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
-  local content = table.concat(lines, '\n')
+  local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+
+  local metadata = string.format(
+    '<!-- nvim-metadata\ncursor-line: %d\nreal-path: %s\n-->',
+    cursor_line,
+    real_file_path or 'Unsaved buffer'
+  )
+  local content_with_metadata = metadata .. '\n' .. table.concat(lines, '\n')
 
   local file = io.open(filepath, 'w')
   if file then
-    file:write(content)
+    file:write(content_with_metadata)
     file:close()
     return true
   end
@@ -57,7 +65,7 @@ local function setup_auto_update(bufnr, filepath)
 
   buf_augroup = vim.api.nvim_create_augroup('MarkdownPreviewSync', { clear = true })
 
-  vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'TextChangedP' }, {
+  vim.api.nvim_create_autocmd({ 'TextChanged', 'TextChangedI', 'TextChangedP', 'CursorMoved', 'CursorMovedI' }, {
     group = buf_augroup,
     buffer = bufnr,
     callback = function()
@@ -92,6 +100,11 @@ function M.start()
   if preview_job_id then
     vim.notify('Markdown Preview: Already running', vim.log.levels.INFO)
     return
+  end
+
+  real_file_path = vim.api.nvim_buf_get_name(bufnr)
+  if real_file_path == '' then
+    real_file_path = 'Unsaved buffer'
   end
 
   temp_file = create_temp_file()

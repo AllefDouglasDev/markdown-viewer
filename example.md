@@ -126,19 +126,26 @@ erDiagram
 ```mermaid
 classDiagram
     class Animal {
-        +String name
-        +int age
-        +makeSound()
+        String name
+        int age
+        makeSound()
     }
     class Dog {
-        +String breed
-        +bark()
+        String breed
+        bark()
     }
     class Cat {
-        +String color
-        +meow()
-test str
+        String color
+        meow()
+        Test str
+    }
+    class Bat {
+        String color
+        meow()
+        Test str
     }
     Animal <|-- Dog
     Animal <|-- Cat
+    Animal <|-- Bat
+    Cat <|-- Bat
 ```

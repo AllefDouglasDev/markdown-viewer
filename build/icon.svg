@@ -1,0 +1,44 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background circle with gradient -->
+  <circle cx="512" cy="512" r="480" fill="url(#gradient)"/>
+
+  <!-- Document shape -->
+  <g filter="url(#shadow)">
+    <rect x="256" y="200" width="512" height="624" rx="40" fill="white" opacity="0.95"/>
+
+    <!-- Top bar (header) -->
+    <rect x="256" y="200" width="512" height="120" rx="40" fill="white" opacity="0.2"/>
+
+    <!-- Markdown symbol "M" -->
+    <path d="M 340 420 L 340 660 L 420 660 L 420 540 L 480 620 L 540 540 L 540 660 L 620 660 L 620 420 L 540 420 L 480 520 L 420 420 Z" fill="url(#gradient)"/>
+
+    <!-- Arrow down symbol -->
+    <g>
+      <rect x="655" y="480" width="60" height="120" rx="8" fill="url(#gradient)"/>
+      <path d="M 685 640 L 685 640 L 745 560 L 625 560 Z" fill="url(#gradient)"/>
+    </g>
+  </g>
+
+  <!-- Decorative lines on document -->
+  <rect x="340" y="720" width="344" height="12" rx="6" fill="url(#gradient)" opacity="0.2"/>
+  <rect x="340" y="752" width="280" height="12" rx="6" fill="url(#gradient)" opacity="0.15"/>
+  <rect x="340" y="784" width="220" height="12" rx="6" fill="url(#gradient)" opacity="0.1"/>
+</svg>

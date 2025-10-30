@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Build output
 dist/
@@ -12,6 +11,7 @@ build/*
 !build/*.icns
 !build/*.ico
 !build/*.png
+!build/*.svg
 
 # Electron builder output
 release/

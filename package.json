@@ -20,11 +20,11 @@
     "prepare": "webpack",
     "update": "npm run webpack && echo 'Global link updated! Run: md <file.md>'",
     "prebuild": "npm run webpack",
-    "build": "electron-builder",
-    "build:mac": "electron-builder --mac",
-    "build:win": "electron-builder --win",
-    "build:linux": "electron-builder --linux",
-    "build:all": "electron-builder -mwl",
+    "build": "electron-builder --publish never",
+    "build:mac": "electron-builder --mac --publish never",
+    "build:win": "electron-builder --win --publish never",
+    "build:linux": "electron-builder --linux --publish never",
+    "build:all": "electron-builder -mwl --publish never",
     "release": "npm run prebuild && electron-builder --publish always"
   },
   "bin": {

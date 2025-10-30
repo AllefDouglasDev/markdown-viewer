@@ -149,11 +149,6 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
-    },
-    "publish": {
-      "provider": "github",
-      "owner": "AllefDouglasDev",
-      "repo": "markdown-viewer"
     }
   }
 }

@@ -45,7 +45,7 @@
     "neovim",
     "vim"
   ],
-  "author": "Allef Douglas Cruz",
+  "author": "Allef Douglas Cruz <allefwalker73@gmail.com>",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.28.4",

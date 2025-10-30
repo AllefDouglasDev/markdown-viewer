@@ -178,6 +178,16 @@ function App() {
     }
   };
 
+  const goToHome = () => {
+    setMarkdown('');
+    setFilePath('');
+    setError('');
+    setHistory([]);
+    setHistoryIndex(-1);
+    setHasFile(false);
+    setCursorLine(null);
+  };
+
   const loadMarkdownFile = async () => {
     try {
       const result = await window.electronAPI.getMarkdownFile();
@@ -253,6 +263,13 @@ function App() {
             →
           </button>
         </div>
+        <button
+          className="home-button"
+          onClick={goToHome}
+          title="Go to home screen"
+        >
+          🏠
+        </button>
         <button
           className="header-toggle"
           onClick={() => setHeaderCollapsed(!headerCollapsed)}

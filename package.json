@@ -2,7 +2,7 @@
   "name": "markdown-electron-viewer",
   "version": "1.0.0",
   "main": "src/main/index.js",
-  "description": "Lightweight Electron app for live Markdown preview from CLI with auto-reload, emoji support, and syntax highlighting",
+  "description": "Markify - Lightweight Electron app for live Markdown preview from CLI with auto-reload, emoji support, and syntax highlighting",
   "repository": {
     "type": "git",
     "url": "git@github.com:AllefDouglasDev/markdown-viewer.git"
@@ -75,8 +75,8 @@
     "unist-util-visit": "^5.0.0"
   },
   "build": {
-    "appId": "com.allef.markdown-viewer",
-    "productName": "Markdown Viewer",
+    "appId": "com.allef.markify",
+    "productName": "Markify",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "files": [
       "dist/**/*",

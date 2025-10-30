@@ -246,18 +246,58 @@ body {
   border: 0;
 }
 
-.loading,
-.error {
+.loading {
   text-align: center;
   padding: 50px;
 }
 
-.error {
+.error-page {
+  text-align: center;
+  padding: 80px 50px 50px;
   color: #f85149;
 }
 
-.error h2 {
+.error-page h2 {
   margin-bottom: 16px;
+}
+
+.error-banner {
+  position: fixed;
+  top: 60px;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background-color: #f85149;
+  border-bottom: 2px solid #da3633;
+  box-shadow: 0 2px 8px rgba(248, 81, 73, 0.3);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.error-banner-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.error-banner-content strong {
+  margin-right: 8px;
 }
 
 .back-button {
@@ -276,6 +316,24 @@ body {
 .back-button:hover {
   background-color: #2ea043;
   border-color: #3fb950;
+}
+
+.back-button-inline {
+  padding: 6px 12px;
+  background-color: #ffffff;
+  border: 1px solid #ffffff;
+  color: #f85149;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.back-button-inline:hover {
+  background-color: #f0f0f0;
+  border-color: #f0f0f0;
 }
 
 /* Mermaid chart styles */
@@ -363,4 +421,114 @@ body {
 
 .mermaid-chart .noteText {
   fill: #d4d4d4 !important;
+}
+
+.welcome-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+  padding: 20px;
+}
+
+.welcome-content {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.welcome-title {
+  font-size: 3em;
+  font-weight: 700;
+  color: #f0f0f0;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #58a6ff 0%, #3fb950 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-subtitle {
+  font-size: 1.2em;
+  color: #8b949e;
+  margin-bottom: 40px;
+}
+
+.open-file-button {
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #238636;
+  border: 1px solid #2ea043;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(35, 134, 54, 0.3);
+}
+
+.open-file-button:hover {
+  background-color: #2ea043;
+  border-color: #3fb950;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(35, 134, 54, 0.4);
+}
+
+.open-file-button:active {
+  transform: translateY(0);
+}
+
+.recent-files {
+  margin-top: 60px;
+}
+
+.recent-files h3 {
+  font-size: 1.2em;
+  color: #f0f0f0;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.recent-files-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-file-item {
+  margin-bottom: 8px;
+}
+
+.recent-file-button {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.recent-file-button:hover {
+  background-color: #3c3c3c;
+  border-color: #58a6ff;
+  transform: translateX(4px);
+}
+
+.recent-file-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.recent-file-path {
+  color: #d4d4d4;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

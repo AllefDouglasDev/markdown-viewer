@@ -5,6 +5,7 @@ import remarkGemoji from 'remark-gemoji';
 import rehypeHighlight from 'rehype-highlight';
 import { visit } from 'unist-util-visit';
 import MermaidChart from './MermaidChart';
+import WelcomeScreen from './WelcomeScreen';
 import './styles.css';
 
 function remarkLineNumbers() {
@@ -29,6 +30,7 @@ function App() {
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [hasFile, setHasFile] = useState(false);
   const contentRef = React.useRef(null);
 
   const parseContent = (content) => {
@@ -100,6 +102,7 @@ function App() {
   };
 
   const handleLinkClick = async (href) => {
+    setError('');
     try {
       const result = await window.electronAPI.navigateToFile(href);
 
@@ -126,6 +129,7 @@ function App() {
   const navigateToPrevious = async () => {
     if (historyIndex <= 0) return;
 
+    setError('');
     const prevPath = history[historyIndex - 1];
     const result = await window.electronAPI.navigateToFile(prevPath);
 
@@ -148,6 +152,7 @@ function App() {
   const navigateToNext = async () => {
     if (historyIndex >= history.length - 1) return;
 
+    setError('');
     const nextPath = history[historyIndex + 1];
     const result = await window.electronAPI.navigateToFile(nextPath);
 
@@ -177,6 +182,12 @@ function App() {
     try {
       const result = await window.electronAPI.getMarkdownFile();
 
+      if (result.hasFile === false) {
+        setHasFile(false);
+        setLoading(false);
+        return;
+      }
+
       if (result.success) {
         const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
         setMarkdown(cleanContent);
@@ -186,6 +197,7 @@ function App() {
         setError('');
         setHistory([newPath]);
         setHistoryIndex(0);
+        setHasFile(true);
       } else {
         setError(result.error);
       }
@@ -196,6 +208,18 @@ function App() {
     }
   };
 
+  const handleFileSelected = (result) => {
+    const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
+    setMarkdown(cleanContent);
+    setCursorLine(newCursorLine);
+    const newPath = realPath || result.filePath;
+    setFilePath(newPath);
+    setError('');
+    setHistory([newPath]);
+    setHistoryIndex(0);
+    setHasFile(true);
+  };
+
   if (loading) {
     return (
       <div className="container">
@@ -204,20 +228,8 @@ function App() {
     );
   }
 
-  if (error && !markdown) {
-    return (
-      <div className="container">
-        <div className="error">
-          <h2>Failed to Open File</h2>
-          <p>{error}</p>
-          {historyIndex > 0 && (
-            <button className="back-button" onClick={goBack}>
-              ← Go Back to Previous File
-            </button>
-          )}
-        </div>
-      </div>
-    );
+  if (!hasFile && !markdown) {
+    return <WelcomeScreen onFileSelected={handleFileSelected} />;
   }
 
   return (
@@ -259,7 +271,31 @@ function App() {
           </>
         )}
       </div>
-      <div className="markdown-content" ref={contentRef}>
+      {error && !markdown ? (
+        <div className="error-page">
+          <h2>Failed to Open File</h2>
+          <p>{error}</p>
+          {historyIndex > 0 && (
+            <button className="back-button" onClick={goBack}>
+              ← Go Back to Previous File
+            </button>
+          )}
+        </div>
+      ) : (
+        <>
+          {error && (
+            <div className="error-banner">
+              <div className="error-banner-content">
+                <strong>⚠ Navigation Error:</strong> {error}
+                {historyIndex > 0 && (
+                  <button className="back-button-inline" onClick={goBack}>
+                    ← Go Back
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+          <div className="markdown-content" ref={contentRef}>
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkGemoji, remarkLineNumbers]}
           rehypePlugins={[rehypeHighlight]}
@@ -281,7 +317,7 @@ function App() {
             a({ node, href, children, ...props }) {
               const isExternal = href?.startsWith('http://') || href?.startsWith('https://');
               const isAnchor = href?.startsWith('#');
-              const isMdFile = href?.endsWith('.md');
+              const isMdFile = href?.includes('.md');
 
               if (isMdFile && !isExternal) {
                 return (
@@ -316,7 +352,9 @@ function App() {
         >
           {markdown}
         </ReactMarkdown>
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

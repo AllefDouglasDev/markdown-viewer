@@ -8,6 +8,34 @@ let mainWindow;
 let filePath = null;
 let fileWatcher = null;
 
+const recentFilesPath = path.join(app.getPath('userData'), 'recent-files.json');
+
+function getRecentFiles() {
+  try {
+    if (fs.existsSync(recentFilesPath)) {
+      const data = fs.readFileSync(recentFilesPath, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error reading recent files:', error);
+  }
+  return [];
+}
+
+function addRecentFile(filePath) {
+  try {
+    let recent = getRecentFiles();
+    recent = recent.filter(f => f !== filePath);
+    recent.unshift(filePath);
+    recent = recent.slice(0, 5);
+    fs.writeFileSync(recentFilesPath, JSON.stringify(recent, null, 2));
+    return recent;
+  } catch (error) {
+    console.error('Error saving recent file:', error);
+    return [];
+  }
+}
+
 autoUpdater.logger = console;
 autoUpdater.autoDownload = false;
 
@@ -135,8 +163,8 @@ app.whenReady().then(() => {
     filePath = path.resolve(fileArg);
 
     if (!fs.existsSync(filePath)) {
-      app.quit();
-      return;
+      console.error('File not found:', filePath);
+      filePath = null;
     }
   }
 
@@ -161,30 +189,30 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('get-markdown-file', () => {
   if (!filePath) {
-    return { success: false, error: 'No file path provided' };
+    return { success: false, error: 'No file path provided', hasFile: false };
   }
 
   const result = loadMarkdownFile(filePath);
 
   if (result.success) {
     watchFile(filePath);
+    addRecentFile(filePath);
   }
 
-  return result;
+  return { ...result, hasFile: true };
 });
 
 ipcMain.handle('navigate-to-file', (event, targetPath) => {
-  if (!filePath) {
-    return { success: false, error: 'No current file path' };
-  }
+  const currentDir = filePath ? path.dirname(filePath) : process.cwd();
 
-  const currentDir = path.dirname(filePath);
+  const pathWithoutAnchor = targetPath.split('#')[0];
+
   let newFilePath;
 
-  if (path.isAbsolute(targetPath)) {
-    newFilePath = targetPath;
+  if (path.isAbsolute(pathWithoutAnchor)) {
+    newFilePath = pathWithoutAnchor;
   } else {
-    newFilePath = path.resolve(currentDir, targetPath);
+    newFilePath = path.resolve(currentDir, pathWithoutAnchor);
   }
 
   if (!fs.existsSync(newFilePath)) {
@@ -197,7 +225,41 @@ ipcMain.handle('navigate-to-file', (event, targetPath) => {
 
   if (result.success) {
     watchFile(filePath);
+    addRecentFile(filePath);
   }
 
   return result;
+});
+
+ipcMain.handle('open-file-dialog', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [
+      { name: 'Markdown Files', extensions: ['md'] }
+    ]
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return { success: false, canceled: true };
+  }
+
+  const selectedPath = result.filePaths[0];
+  filePath = selectedPath;
+
+  const fileResult = loadMarkdownFile(filePath);
+
+  if (fileResult.success) {
+    watchFile(filePath);
+    addRecentFile(filePath);
+  }
+
+  return fileResult;
+});
+
+ipcMain.handle('get-recent-files', () => {
+  return getRecentFiles().filter(f => fs.existsSync(f));
+});
+
+ipcMain.handle('add-recent-file', (event, file) => {
+  return addRecentFile(file);
 });

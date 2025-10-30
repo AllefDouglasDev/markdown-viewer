@@ -172,3 +172,32 @@ ipcMain.handle('get-markdown-file', () => {
 
   return result;
 });
+
+ipcMain.handle('navigate-to-file', (event, targetPath) => {
+  if (!filePath) {
+    return { success: false, error: 'No current file path' };
+  }
+
+  const currentDir = path.dirname(filePath);
+  let newFilePath;
+
+  if (path.isAbsolute(targetPath)) {
+    newFilePath = targetPath;
+  } else {
+    newFilePath = path.resolve(currentDir, targetPath);
+  }
+
+  if (!fs.existsSync(newFilePath)) {
+    return { success: false, error: `File not found: ${newFilePath}` };
+  }
+
+  filePath = newFilePath;
+
+  const result = loadMarkdownFile(filePath);
+
+  if (result.success) {
+    watchFile(filePath);
+  }
+
+  return result;
+});

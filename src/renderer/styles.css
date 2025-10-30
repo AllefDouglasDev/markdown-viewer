@@ -38,6 +38,37 @@ body {
   background-color: rgba(30, 30, 30, 0.95);
 }
 
+.header-nav {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.nav-button {
+  background-color: #2d2d2d;
+  border: 1px solid #3c3c3c;
+  color: #d4d4d4;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-button:hover:not(:disabled) {
+  background-color: #3c3c3c;
+  border-color: #58a6ff;
+}
+
+.nav-button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
 .header-toggle {
   background-color: #2d2d2d;
   border: 1px solid #3c3c3c;
@@ -227,6 +258,24 @@ body {
 
 .error h2 {
   margin-bottom: 16px;
+}
+
+.back-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #238636;
+  border: 1px solid #2ea043;
+  color: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background-color: #2ea043;
+  border-color: #3fb950;
 }
 
 /* Mermaid chart styles */

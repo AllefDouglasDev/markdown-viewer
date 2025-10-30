@@ -27,6 +27,8 @@ function App() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [cursorLine, setCursorLine] = useState(null);
   const [headerCollapsed, setHeaderCollapsed] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyIndex, setHistoryIndex] = useState(-1);
   const contentRef = React.useRef(null);
 
   const parseContent = (content) => {
@@ -90,6 +92,87 @@ function App() {
     }
   }, [cursorLine]);
 
+  const addToHistory = (path) => {
+    const newHistory = history.slice(0, historyIndex + 1);
+    newHistory.push(path);
+    setHistory(newHistory);
+    setHistoryIndex(newHistory.length - 1);
+  };
+
+  const handleLinkClick = async (href) => {
+    try {
+      const result = await window.electronAPI.navigateToFile(href);
+
+      if (result.success) {
+        const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
+        setMarkdown(cleanContent);
+        setCursorLine(newCursorLine);
+        const newPath = realPath || result.filePath;
+        setFilePath(newPath);
+        setError('');
+        addToHistory(newPath);
+
+        if (contentRef.current) {
+          contentRef.current.scrollTop = 0;
+        }
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError(`Failed to navigate: ${err.message}`);
+    }
+  };
+
+  const navigateToPrevious = async () => {
+    if (historyIndex <= 0) return;
+
+    const prevPath = history[historyIndex - 1];
+    const result = await window.electronAPI.navigateToFile(prevPath);
+
+    if (result.success) {
+      const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
+      setMarkdown(cleanContent);
+      setCursorLine(newCursorLine);
+      setFilePath(realPath || result.filePath);
+      setError('');
+      setHistoryIndex(historyIndex - 1);
+
+      if (contentRef.current) {
+        contentRef.current.scrollTop = 0;
+      }
+    } else {
+      setError(result.error);
+    }
+  };
+
+  const navigateToNext = async () => {
+    if (historyIndex >= history.length - 1) return;
+
+    const nextPath = history[historyIndex + 1];
+    const result = await window.electronAPI.navigateToFile(nextPath);
+
+    if (result.success) {
+      const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
+      setMarkdown(cleanContent);
+      setCursorLine(newCursorLine);
+      setFilePath(realPath || result.filePath);
+      setError('');
+      setHistoryIndex(historyIndex + 1);
+
+      if (contentRef.current) {
+        contentRef.current.scrollTop = 0;
+      }
+    } else {
+      setError(result.error);
+    }
+  };
+
+  const goBack = async () => {
+    if (historyIndex > 0) {
+      await navigateToPrevious();
+    }
+  };
+
   const loadMarkdownFile = async () => {
     try {
       const result = await window.electronAPI.getMarkdownFile();
@@ -98,8 +181,11 @@ function App() {
         const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
         setMarkdown(cleanContent);
         setCursorLine(newCursorLine);
-        setFilePath(realPath || result.filePath);
+        const newPath = realPath || result.filePath;
+        setFilePath(newPath);
         setError('');
+        setHistory([newPath]);
+        setHistoryIndex(0);
       } else {
         setError(result.error);
       }
@@ -118,12 +204,17 @@ function App() {
     );
   }
 
-  if (error) {
+  if (error && !markdown) {
     return (
       <div className="container">
         <div className="error">
-          <h2>Error</h2>
+          <h2>Failed to Open File</h2>
           <p>{error}</p>
+          {historyIndex > 0 && (
+            <button className="back-button" onClick={goBack}>
+              ← Go Back to Previous File
+            </button>
+          )}
         </div>
       </div>
     );
@@ -132,6 +223,24 @@ function App() {
   return (
     <div className="container">
       <div className={`header ${headerCollapsed ? 'collapsed' : ''}`}>
+        <div className="header-nav">
+          <button
+            className="nav-button"
+            onClick={navigateToPrevious}
+            disabled={historyIndex <= 0}
+            title="Previous file"
+          >
+            ←
+          </button>
+          <button
+            className="nav-button"
+            onClick={navigateToNext}
+            disabled={historyIndex >= history.length - 1}
+            title="Next file"
+          >
+            →
+          </button>
+        </div>
         <button
           className="header-toggle"
           onClick={() => setHeaderCollapsed(!headerCollapsed)}
@@ -167,6 +276,40 @@ function App() {
                 <code className={className} {...props}>
                   {children}
                 </code>
+              );
+            },
+            a({ node, href, children, ...props }) {
+              const isExternal = href?.startsWith('http://') || href?.startsWith('https://');
+              const isAnchor = href?.startsWith('#');
+              const isMdFile = href?.endsWith('.md');
+
+              if (isMdFile && !isExternal) {
+                return (
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleLinkClick(href);
+                    }}
+                    {...props}
+                  >
+                    {children}
+                  </a>
+                );
+              }
+
+              if (isExternal) {
+                return (
+                  <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+                    {children}
+                  </a>
+                );
+              }
+
+              return (
+                <a href={href} {...props}>
+                  {children}
+                </a>
               );
             },
           }}

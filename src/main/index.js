@@ -194,22 +194,28 @@ function watchDirectory(dirPath) {
     directoryWatcher.close();
   }
 
-  directoryWatcher = chokidar.watch(dirPath, {
+  directoryWatcher = chokidar.watch('**/*.md', {
+    cwd: dirPath,
     persistent: true,
     ignoreInitial: true,
-    depth: 99,
-    ignored: /(^|[\/\\])\../,
+    depth: 5,
+    ignored: /(^|[\/\\])\.|node_modules|\.git/,
+    usePolling: false,
     awaitWriteFinish: {
       stabilityThreshold: 300,
       pollInterval: 100
     }
   });
 
+  let updateTimeout;
   const updateTree = () => {
-    const result = readDirectoryTree(dirPath);
-    if (result.success && mainWindow) {
-      mainWindow.webContents.send('directory-tree-updated', result.tree);
-    }
+    clearTimeout(updateTimeout);
+    updateTimeout = setTimeout(() => {
+      const result = readDirectoryTree(dirPath);
+      if (result.success && mainWindow) {
+        mainWindow.webContents.send('directory-tree-updated', result.tree);
+      }
+    }, 500);
   };
 
   directoryWatcher.on('add', updateTree);

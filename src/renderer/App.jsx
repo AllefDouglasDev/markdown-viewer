@@ -63,6 +63,10 @@ function App() {
 
       setTimeout(() => setLastUpdated(null), 2000);
     });
+
+    window.electronAPI.onDirectoryTreeUpdated((tree) => {
+      setDirectoryTree(tree);
+    });
   }, []);
 
   const loadDirectoryTree = async (rootPath = null) => {
@@ -248,10 +252,25 @@ function App() {
     loadDirectoryTree();
   };
 
-  const handleFolderSelected = (result) => {
+  const handleFolderSelected = async (result) => {
     if (result.success) {
       setDirectoryTree(result.tree);
       setHasFile(true);
+
+      if (result.defaultFile) {
+        const fileResult = await window.electronAPI.navigateToFile(result.defaultFile);
+        if (fileResult.success) {
+          const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(fileResult.content);
+          setMarkdown(cleanContent);
+          setCursorLine(newCursorLine);
+          const newPath = realPath || fileResult.filePath;
+          setFilePath(newPath);
+          setSelectedFile(newPath);
+          setError('');
+          setHistory([newPath]);
+          setHistoryIndex(0);
+        }
+      }
     }
   };
 

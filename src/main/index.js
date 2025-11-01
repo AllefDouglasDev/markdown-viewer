@@ -7,6 +7,7 @@ const { autoUpdater } = require('electron-updater');
 let mainWindow;
 let filePath = null;
 let fileWatcher = null;
+let directoryWatcher = null;
 
 const recentFilesPath = path.join(app.getPath('userData'), 'recent-files.json');
 
@@ -69,6 +70,9 @@ function createWindow() {
     if (fileWatcher) {
       fileWatcher.close();
     }
+    if (directoryWatcher) {
+      directoryWatcher.close();
+    }
     mainWindow = null;
   });
 }
@@ -80,6 +84,30 @@ function loadMarkdownFile(filePath) {
   } catch (error) {
     return { success: false, error: error.message };
   }
+}
+
+function findDefaultFile(tree, rootPath) {
+  const readmePath = path.join(rootPath, 'README.md');
+  if (fs.existsSync(readmePath)) {
+    return readmePath;
+  }
+
+  function findFirstMarkdown(items) {
+    for (const item of items) {
+      if (item.type === 'file' && item.name.endsWith('.md')) {
+        return item.path;
+      }
+    }
+    for (const item of items) {
+      if (item.type === 'directory' && item.children) {
+        const found = findFirstMarkdown(item.children);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+  return findFirstMarkdown(tree);
 }
 
 function readDirectoryTree(dirPath) {
@@ -132,7 +160,8 @@ function readDirectoryTree(dirPath) {
     }
 
     const tree = buildTree(dirPath);
-    return { success: true, tree, rootPath: dirPath };
+    const defaultFile = findDefaultFile(tree, dirPath);
+    return { success: true, tree, rootPath: dirPath, defaultFile };
   } catch (error) {
     return { success: false, error: error.message };
   }
@@ -158,6 +187,35 @@ function watchFile(filePath) {
       mainWindow.webContents.send('markdown-updated', result.content);
     }
   });
+}
+
+function watchDirectory(dirPath) {
+  if (directoryWatcher) {
+    directoryWatcher.close();
+  }
+
+  directoryWatcher = chokidar.watch(dirPath, {
+    persistent: true,
+    ignoreInitial: true,
+    depth: 99,
+    ignored: /(^|[\/\\])\../,
+    awaitWriteFinish: {
+      stabilityThreshold: 300,
+      pollInterval: 100
+    }
+  });
+
+  const updateTree = () => {
+    const result = readDirectoryTree(dirPath);
+    if (result.success && mainWindow) {
+      mainWindow.webContents.send('directory-tree-updated', result.tree);
+    }
+  };
+
+  directoryWatcher.on('add', updateTree);
+  directoryWatcher.on('addDir', updateTree);
+  directoryWatcher.on('unlink', updateTree);
+  directoryWatcher.on('unlinkDir', updateTree);
 }
 
 autoUpdater.on('update-available', (info) => {
@@ -332,7 +390,13 @@ ipcMain.handle('get-directory-tree', (_event, rootPath) => {
     dirPath = process.cwd();
   }
 
-  return readDirectoryTree(dirPath);
+  const result = readDirectoryTree(dirPath);
+
+  if (result.success) {
+    watchDirectory(dirPath);
+  }
+
+  return result;
 });
 
 ipcMain.handle('open-folder-dialog', async () => {
@@ -345,5 +409,11 @@ ipcMain.handle('open-folder-dialog', async () => {
   }
 
   const selectedPath = result.filePaths[0];
-  return readDirectoryTree(selectedPath);
+  const treeResult = readDirectoryTree(selectedPath);
+
+  if (treeResult.success) {
+    watchDirectory(selectedPath);
+  }
+
+  return treeResult;
 });

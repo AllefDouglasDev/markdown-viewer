@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Folder, FolderOpen, FileText, Menu, ChevronLeft, ChevronRight, Home } from 'lucide-react';
 
 const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggleFolder, level = 0 }) => {
   const isExpanded = expandedFolders.has(item.path);
@@ -20,7 +21,7 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
         style={{ paddingLeft: `${level * 16 + 8}px` }}
       >
         <span className="file-tree-icon">
-          {item.type === 'directory' ? (isExpanded ? '📂' : '📁') : '📄'}
+          {item.type === 'directory' ? (isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />) : <FileText size={16} />}
         </span>
         <span className="file-tree-name">{item.name}</span>
       </div>
@@ -43,7 +44,7 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
   );
 };
 
-const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSidebar }) => {
+const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSidebar, onNavigatePrev, onNavigateNext, onExitPreview, canNavigatePrev, canNavigateNext }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
 
   const toggleFolder = (folderPath) => {
@@ -64,11 +65,31 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
         className="sidebar-toggle"
         onClick={onToggleSidebar}
         title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-        style={{ left: sidebarOpen ? '296px' : '16px' }}
+        style={{ left: sidebarOpen ? '280px' : '0px' }}
       >
-        ☰
+        <Menu size={20} />
       </button>
       <div className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="sidebar-header">
+          <div className="sidebar-nav-buttons">
+            <button
+              className="sidebar-nav-button"
+              onClick={onNavigatePrev}
+              disabled={!canNavigatePrev}
+              title="Previous file"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              className="sidebar-nav-button"
+              onClick={onNavigateNext}
+              disabled={!canNavigateNext}
+              title="Next file"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
         <div className="file-tree">
           {tree && tree.length > 0 ? (
             tree.map((item, index) => (
@@ -84,6 +105,12 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
           ) : (
             <div className="file-tree-empty">No markdown files found</div>
           )}
+        </div>
+        <div className="sidebar-footer">
+          <button className="sidebar-exit-button" onClick={onExitPreview}>
+            <Home size={18} />
+            <span>Exit Preview</span>
+          </button>
         </div>
       </div>
     </>

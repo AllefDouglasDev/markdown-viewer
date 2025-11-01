@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FileText, Folder } from 'lucide-react';
 
 function WelcomeScreen({ onFileSelected, onFolderSelected }) {
   const [recentFiles, setRecentFiles] = useState([]);
@@ -46,10 +47,10 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
 
         <div className="welcome-buttons">
           <button className="welcome-button" onClick={handleOpenFile}>
-            📄 Open File
+            <FileText size={20} /> Open File
           </button>
           <button className="welcome-button" onClick={handleOpenFolder}>
-            📁 Open Folder
+            <Folder size={20} /> Open Folder
           </button>
         </div>
 
@@ -63,7 +64,7 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
                     className="recent-file-button"
                     onClick={() => handleRecentFileClick(file)}
                   >
-                    <span className="recent-file-icon">📄</span>
+                    <span className="recent-file-icon"><FileText size={16} /></span>
                     <span className="recent-file-path">{file}</span>
                   </button>
                 </li>

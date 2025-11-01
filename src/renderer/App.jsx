@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkGemoji from 'remark-gemoji';
 import rehypeHighlight from 'rehype-highlight';
 import { visit } from 'unist-util-visit';
+import { Check, AlertTriangle, ChevronLeft } from 'lucide-react';
 import MermaidChart from './MermaidChart';
 import WelcomeScreen from './WelcomeScreen';
 import FileTree from './FileTree';
@@ -28,7 +29,6 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [cursorLine, setCursorLine] = useState(null);
-  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [hasFile, setHasFile] = useState(false);
@@ -300,50 +300,19 @@ function App() {
         onFileSelect={handleFileSelectFromTree}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        onNavigatePrev={navigateToPrevious}
+        onNavigateNext={navigateToNext}
+        onExitPreview={goToHome}
+        canNavigatePrev={historyIndex > 0}
+        canNavigateNext={historyIndex < history.length - 1}
       />
       <div className={`container ${sidebarOpen ? 'with-sidebar' : ''}`}>
-      <div className={`header ${headerCollapsed ? 'collapsed' : ''}`}>
-        <div className="header-nav">
-          <button
-            className="nav-button"
-            onClick={navigateToPrevious}
-            disabled={historyIndex <= 0}
-            title="Previous file"
-          >
-            ←
-          </button>
-          <button
-            className="nav-button"
-            onClick={navigateToNext}
-            disabled={historyIndex >= history.length - 1}
-            title="Next file"
-          >
-            →
-          </button>
-        </div>
-        <button
-          className="home-button"
-          onClick={goToHome}
-          title="Go to home screen"
-        >
-          🏠
-        </button>
-        <button
-          className="header-toggle"
-          onClick={() => setHeaderCollapsed(!headerCollapsed)}
-          title={headerCollapsed ? 'Expand header' : 'Collapse header'}
-        >
-          {headerCollapsed ? '▼' : '▲'}
-        </button>
-        {!headerCollapsed && (
-          <>
-            <h3 className="file-path">{filePath}</h3>
-            {lastUpdated && (
-              <div className="update-indicator">
-                ✓ Updated at {lastUpdated}
-              </div>
-            )}
-          </>
+      <div className="header">
+        <h3 className="file-path">{filePath}</h3>
+        {lastUpdated && (
+          <div className="update-indicator">
+            <Check size={16} /> Updated at {lastUpdated}
+          </div>
         )}
       </div>
       {error && !markdown ? (
@@ -361,10 +330,10 @@ function App() {
           {error && (
             <div className="error-banner">
               <div className="error-banner-content">
-                <strong>⚠ Navigation Error:</strong> {error}
+                <strong><AlertTriangle size={16} /> Navigation Error:</strong> {error}
                 {historyIndex > 0 && (
                   <button className="back-button-inline" onClick={goBack}>
-                    ← Go Back
+                    <ChevronLeft size={16} /> Go Back
                   </button>
                 )}
               </div>

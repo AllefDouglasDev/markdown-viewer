@@ -7,4 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   getRecentFiles: () => ipcRenderer.invoke('get-recent-files'),
   addRecentFile: (filePath) => ipcRenderer.invoke('add-recent-file', filePath),
+  getDirectoryTree: (rootPath) => ipcRenderer.invoke('get-directory-tree', rootPath),
+  openFolderDialog: () => ipcRenderer.invoke('open-folder-dialog'),
 });

@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Menu, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
@@ -82,6 +82,62 @@ function loadMarkdownFile(filePath) {
   }
 }
 
+function readDirectoryTree(dirPath) {
+  try {
+    if (!fs.existsSync(dirPath)) {
+      return { success: false, error: 'Directory not found' };
+    }
+
+    const stats = fs.statSync(dirPath);
+    if (!stats.isDirectory()) {
+      return { success: false, error: 'Path is not a directory' };
+    }
+
+    function buildTree(currentPath) {
+      const items = fs.readdirSync(currentPath);
+      const tree = [];
+
+      for (const item of items) {
+        if (item.startsWith('.')) continue;
+
+        const itemPath = path.join(currentPath, item);
+        const itemStats = fs.statSync(itemPath);
+
+        if (itemStats.isDirectory()) {
+          const children = buildTree(itemPath);
+
+          if (children.length > 0) {
+            tree.push({
+              name: item,
+              path: itemPath,
+              type: 'directory',
+              children
+            });
+          }
+        } else if (itemStats.isFile() && item.endsWith('.md')) {
+          tree.push({
+            name: item,
+            path: itemPath,
+            type: 'file'
+          });
+        }
+      }
+
+      return tree.sort((a, b) => {
+        if (a.type !== b.type) {
+          return a.type === 'directory' ? -1 : 1;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    }
+
+    const tree = buildTree(dirPath);
+    return { success: true, tree, rootPath: dirPath };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
 function watchFile(filePath) {
   if (fileWatcher) {
     fileWatcher.close();
@@ -143,7 +199,10 @@ autoUpdater.on('update-downloaded', (info) => {
   });
 });
 
-autoUpdater.on('error', (err) => {
+autoUpdater.on('error', (_err) => {
+	if (mainWindow) {
+		mainWindow.setProgressBar(-1);
+	}
 });
 
 function checkForUpdates() {
@@ -202,7 +261,7 @@ ipcMain.handle('get-markdown-file', () => {
   return { ...result, hasFile: true };
 });
 
-ipcMain.handle('navigate-to-file', (event, targetPath) => {
+ipcMain.handle('navigate-to-file', (_event, targetPath) => {
   const currentDir = filePath ? path.dirname(filePath) : process.cwd();
 
   const pathWithoutAnchor = targetPath.split('#')[0];
@@ -260,6 +319,31 @@ ipcMain.handle('get-recent-files', () => {
   return getRecentFiles().filter(f => fs.existsSync(f));
 });
 
-ipcMain.handle('add-recent-file', (event, file) => {
+ipcMain.handle('add-recent-file', (_event, file) => {
   return addRecentFile(file);
+});
+
+ipcMain.handle('get-directory-tree', (_event, rootPath) => {
+  let dirPath = rootPath;
+
+  if (!dirPath && filePath) {
+    dirPath = path.dirname(filePath);
+  } else if (!dirPath) {
+    dirPath = process.cwd();
+  }
+
+  return readDirectoryTree(dirPath);
+});
+
+ipcMain.handle('open-folder-dialog', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openDirectory']
+  });
+
+  if (result.canceled || result.filePaths.length === 0) {
+    return { success: false, canceled: true };
+  }
+
+  const selectedPath = result.filePaths[0];
+  return readDirectoryTree(selectedPath);
 });

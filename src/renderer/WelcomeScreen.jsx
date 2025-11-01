@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function WelcomeScreen({ onFileSelected }) {
+function WelcomeScreen({ onFileSelected, onFolderSelected }) {
   const [recentFiles, setRecentFiles] = useState([]);
 
   useEffect(() => {
@@ -19,6 +19,13 @@ function WelcomeScreen({ onFileSelected }) {
     }
   };
 
+  const handleOpenFolder = async () => {
+    const result = await window.electronAPI.openFolderDialog();
+    if (result.success && onFolderSelected) {
+      onFolderSelected(result);
+    }
+  };
+
   const handleRecentFileClick = async (filePath) => {
     const result = await window.electronAPI.navigateToFile(filePath);
     if (result.success) {
@@ -29,12 +36,22 @@ function WelcomeScreen({ onFileSelected }) {
   return (
     <div className="welcome-screen">
       <div className="welcome-content">
-        <h1 className="welcome-title">Markdown Viewer</h1>
-        <p className="welcome-subtitle">Open a markdown file to get started</p>
+        <img
+          src="../../build/icon.svg"
+          alt="Markify Logo"
+          className="welcome-logo"
+        />
+        <h1 className="welcome-title">Markify</h1>
+        <p className="welcome-subtitle">Open a file or folder to start viewing Markdown</p>
 
-        <button className="open-file-button" onClick={handleOpenFile}>
-          📂 Open Markdown File
-        </button>
+        <div className="welcome-buttons">
+          <button className="welcome-button" onClick={handleOpenFile}>
+            📄 Open File
+          </button>
+          <button className="welcome-button" onClick={handleOpenFolder}>
+            📁 Open Folder
+          </button>
+        </div>
 
         {recentFiles.length > 0 && (
           <div className="recent-files">

@@ -6,6 +6,7 @@ import rehypeHighlight from 'rehype-highlight';
 import { visit } from 'unist-util-visit';
 import MermaidChart from './MermaidChart';
 import WelcomeScreen from './WelcomeScreen';
+import FileTree from './FileTree';
 import './styles.css';
 
 function remarkLineNumbers() {
@@ -31,6 +32,9 @@ function App() {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [hasFile, setHasFile] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [directoryTree, setDirectoryTree] = useState([]);
+  const [selectedFile, setSelectedFile] = useState(null);
   const contentRef = React.useRef(null);
 
   const parseContent = (content) => {
@@ -46,6 +50,7 @@ function App() {
 
   useEffect(() => {
     loadMarkdownFile();
+    loadDirectoryTree();
 
     window.electronAPI.onMarkdownUpdated((content) => {
       const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(content);
@@ -59,6 +64,17 @@ function App() {
       setTimeout(() => setLastUpdated(null), 2000);
     });
   }, []);
+
+  const loadDirectoryTree = async (rootPath = null) => {
+    try {
+      const result = await window.electronAPI.getDirectoryTree(rootPath);
+      if (result.success) {
+        setDirectoryTree(result.tree);
+      }
+    } catch (err) {
+      console.error('Failed to load directory tree:', err);
+    }
+  };
 
   useEffect(() => {
     if (cursorLine !== null && contentRef.current) {
@@ -224,10 +240,44 @@ function App() {
     setCursorLine(newCursorLine);
     const newPath = realPath || result.filePath;
     setFilePath(newPath);
+    setSelectedFile(newPath);
     setError('');
     setHistory([newPath]);
     setHistoryIndex(0);
     setHasFile(true);
+    loadDirectoryTree();
+  };
+
+  const handleFolderSelected = (result) => {
+    if (result.success) {
+      setDirectoryTree(result.tree);
+      setHasFile(true);
+    }
+  };
+
+  const handleFileSelectFromTree = async (path) => {
+    setError('');
+    try {
+      const result = await window.electronAPI.navigateToFile(path);
+      if (result.success) {
+        const { content: cleanContent, cursorLine: newCursorLine, realPath } = parseContent(result.content);
+        setMarkdown(cleanContent);
+        setCursorLine(newCursorLine);
+        const newPath = realPath || result.filePath;
+        setFilePath(newPath);
+        setSelectedFile(newPath);
+        setError('');
+        addToHistory(newPath);
+
+        if (contentRef.current) {
+          contentRef.current.scrollTop = 0;
+        }
+      } else {
+        setError(result.error);
+      }
+    } catch (err) {
+      setError(`Failed to navigate: ${err.message}`);
+    }
   };
 
   if (loading) {
@@ -239,11 +289,19 @@ function App() {
   }
 
   if (!hasFile && !markdown) {
-    return <WelcomeScreen onFileSelected={handleFileSelected} />;
+    return <WelcomeScreen onFileSelected={handleFileSelected} onFolderSelected={handleFolderSelected} />;
   }
 
   return (
-    <div className="container">
+    <div className="app-layout">
+      <FileTree
+        tree={directoryTree}
+        selectedFile={selectedFile}
+        onFileSelect={handleFileSelectFromTree}
+        sidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+      />
+      <div className={`container ${sidebarOpen ? 'with-sidebar' : ''}`}>
       <div className={`header ${headerCollapsed ? 'collapsed' : ''}`}>
         <div className="header-nav">
           <button
@@ -372,6 +430,7 @@ function App() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

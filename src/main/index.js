@@ -500,3 +500,46 @@ ipcMain.handle('detect-available-editors', async () => {
     return { success: false, error: error.message };
   }
 });
+
+ipcMain.handle('open-how-to-use', () => {
+  try {
+    const isDev = process.argv.includes('--dev');
+    const docsPath = isDev
+      ? path.join(__dirname, '../../docs')
+      : path.join(process.resourcesPath, 'docs');
+
+    if (!fs.existsSync(docsPath)) {
+      const fallbackPath = path.join(app.getAppPath(), 'docs');
+      if (!fs.existsSync(fallbackPath)) {
+        return { success: false, error: 'Documentation folder not found' };
+      }
+    }
+
+    const readmePath = path.join(fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs'), 'README.md');
+
+    if (!fs.existsSync(readmePath)) {
+      return { success: false, error: 'Documentation README not found' };
+    }
+
+    const result = loadMarkdownFile(readmePath);
+    if (result.success) {
+      filePath = readmePath;
+      watchFile(readmePath);
+
+      const treeResult = readDirectoryTree(fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs'));
+      if (treeResult.success) {
+        watchDirectory(fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs'));
+      }
+
+      return {
+        ...result,
+        tree: treeResult.tree,
+        defaultFile: readmePath
+      };
+    }
+
+    return result;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});

@@ -192,7 +192,7 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
           )}
         </div>
         <div className="sidebar-footer">
-          <button className="sidebar-exit-button" onClick={onExitPreview}>
+          <button className="sidebar-exit-button" onClick={onExitPreview} title="Return to welcome screen">
             <Home size={18} />
             <span>Exit Preview</span>
           </button>

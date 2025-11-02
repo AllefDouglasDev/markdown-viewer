@@ -15,4 +15,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getEditorConfig: () => ipcRenderer.invoke('get-editor-config'),
   openConfigFile: () => ipcRenderer.invoke('open-config-file'),
   detectAvailableEditors: () => ipcRenderer.invoke('detect-available-editors'),
+  openHowToUse: () => ipcRenderer.invoke('open-how-to-use'),
 });

@@ -92,7 +92,8 @@
       "src/main/**/*",
       "bin/**/*",
       "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "docs/**/*"
     ],
     "directories": {
       "output": "release",

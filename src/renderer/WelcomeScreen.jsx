@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Folder, Settings } from 'lucide-react';
+import { FileText, Folder, Settings, BookOpen } from 'lucide-react';
 
 function WelcomeScreen({ onFileSelected, onFolderSelected }) {
   const [recentFiles, setRecentFiles] = useState([]);
@@ -54,6 +54,15 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
     await window.electronAPI.openConfigFile();
   };
 
+  const handleOpenHowToUse = async () => {
+    const result = await window.electronAPI.openHowToUse();
+    if (result.success && result.tree) {
+      onFolderSelected(result);
+    } else if (result.success) {
+      onFileSelected(result);
+    }
+  };
+
   return (
     <div className="welcome-screen">
       <button
@@ -78,6 +87,9 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
           </button>
           <button className="welcome-button" onClick={handleOpenFolder}>
             <Folder size={20} /> Open Folder
+          </button>
+          <button className="welcome-button welcome-button-guide" onClick={handleOpenHowToUse}>
+            <BookOpen size={20} /> How to Use
           </button>
         </div>
 

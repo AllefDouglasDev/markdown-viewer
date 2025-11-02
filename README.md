@@ -2,7 +2,7 @@
 
 A lightweight, elegant Electron application for rendering and previewing Markdown files with live reload, file navigation, and powerful features.
 
-> 📖 **New to Markify?** Check out the [complete usage guide](./HOW_TO_USE.md) for detailed instructions on all features.
+> 📖 **New to Markify?** Click the "How to Use" button on the welcome screen or browse the [complete documentation](./docs/README.md) for detailed guides on all features.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -163,6 +163,7 @@ markdown/
 - ✅ **Sidebar Toggle**: Show/hide file tree
 - ✅ **Update Indicator**: Visual feedback when file changes
 - ✅ **Settings Button**: Quick access to configuration
+- ✅ **In-App Guide**: Complete "How to Use" guide accessible from welcome screen
 
 ### Editor Integration
 - ✅ **Open in File Explorer**: Right-click to reveal in Finder/Explorer
@@ -369,7 +370,26 @@ Now when you open a file from Markify in Neovim, it will:
 
 ## 📚 Documentation
 
-- **[HOW_TO_USE.md](./HOW_TO_USE.md)** - Complete user guide with all features
+### User Documentation (In-App)
+
+Access comprehensive guides directly from Markify by clicking the **"How to Use"** button on the welcome screen.
+
+**Available Guides:**
+- [Getting Started](./docs/getting-started.md) - Opening files, folders, and basics
+- [Navigation](./docs/navigation.md) - File tree, history, and link navigation
+- [Live Reload](./docs/live-reload.md) - Real-time preview and auto-updates
+- [Context Menu](./docs/context-menu.md) - Quick actions and editor integration
+- [Editor Configuration](./docs/editor-configuration.md) - Customize external editors
+- [Markdown Features](./docs/markdown-features.md) - GFM, emoji, syntax highlighting, Mermaid
+- [Interface](./docs/interface.md) - UI features and dark theme
+- [Keyboard Shortcuts](./docs/keyboard-shortcuts.md) - Available shortcuts
+- [CLI Usage](./docs/cli-usage.md) - Command-line interface and shell integration
+- [Tips & Tricks](./docs/tips-and-tricks.md) - Best practices and pro tips
+
+**[📖 Browse All Documentation](./docs/README.md)**
+
+### Developer Documentation
+
 - **[CLAUDE.md](./CLAUDE.md)** - Technical documentation for developers
 - **[mermaid-example.md](./mermaid-example.md)** - Mermaid diagram examples
 

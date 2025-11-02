@@ -1,7 +1,6 @@
 # TODO
 
 ## Important
-- [ ] Watch folder
 - [ ] Add menu when right-clicking on file
     - [ ] Open file in editor. Connect with the editor by a tmp file.
         - [ ] Maybe add the option to choose the editor in a config file.

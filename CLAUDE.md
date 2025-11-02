@@ -10,6 +10,9 @@ Electron application for rendering Markdown files with live reload. Invoked from
 
 - **Electron 38**: Desktop framework
 - **React 19**: UI library
+- **shadcn/ui**: Component library for UI elements (Context Menu, Dialog, etc.)
+- **Tailwind CSS**: Utility-first CSS framework (required for shadcn/ui)
+- **lucide-react**: Icon library
 - **react-markdown 10**: Markdown renderer (safe, extensible, 116k+ users)
 - **remark-gfm**: GitHub Flavored Markdown support
 - **remark-gemoji**: Emoji shortcode support (`:rocket:` → 🚀)
@@ -45,13 +48,18 @@ md example.md
 src/
 ├── main/
 │   ├── index.js       # Electron main process, CLI args, file watching
-│   └── preload.js     # IPC bridge (contextBridge)
-└── renderer/
-    ├── index.html     # HTML template with Mermaid CDN
-    ├── index.jsx      # React entry point
-    ├── App.jsx        # Main component with markdown state
-    ├── MermaidChart.jsx # Mermaid diagram renderer component
-    └── styles.css     # Dark theme styles
+│   ├── preload.js     # IPC bridge (contextBridge)
+│   └── config.js      # Configuration management for editor settings
+├── renderer/
+│   ├── index.html     # HTML template with Mermaid CDN
+│   ├── index.jsx      # React entry point
+│   ├── App.jsx        # Main component with markdown state
+│   ├── MermaidChart.jsx # Mermaid diagram renderer component
+│   ├── FileTree.jsx   # File tree sidebar with context menus
+│   ├── WelcomeScreen.jsx # Welcome screen for file selection
+│   ├── styles.css     # Dark theme styles
+│   └── components/
+│       └── ui/        # shadcn/ui components
 bin/
 └── md                 # CLI wrapper script
 ```
@@ -137,7 +145,53 @@ Supported diagram types:
 
 See `mermaid-example.md` for comprehensive examples of all diagram types.
 
+## UI Components (shadcn/ui)
+
+This project uses **shadcn/ui** for UI components. Always prefer shadcn/ui components over custom implementations.
+
+### Installation
+
+Add components individually using the shadcn CLI:
+```bash
+npx shadcn@latest add context-menu
+npx shadcn@latest add dialog
+npx shadcn@latest add button
+```
+
+### Available Components
+
+Browse all components at **https://ui.shadcn.com/**
+
+Commonly used components:
+- **Context Menu**: Right-click menus for files
+- **Dialog**: Modal windows
+- **Button**: Styled buttons
+- **Dropdown Menu**: Click-triggered menus
+- **Popover**: Floating content
+- **Toggle**: On/off switches
+
+### Usage Pattern
+
+```jsx
+import { ContextMenu, ContextMenuTrigger, ContextMenuItem } from '@/components/ui/context-menu'
+
+<ContextMenu>
+  <ContextMenuTrigger>Right click me</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem>Action 1</ContextMenuItem>
+    <ContextMenuItem>Action 2</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
+```
+
+### Styling
+
+- Components use Tailwind CSS classes
+- Dark theme configured via CSS variables
+- Customize in `src/renderer/styles.css` or component files
+
 **IMPORTANT**
 
 - **NEVER** add comments to the code
 - **NEVER** add comments to the code unless explicitly requested
+- **ALWAYS** search and use shadcn/ui components when building UI features

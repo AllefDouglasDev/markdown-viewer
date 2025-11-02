@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
-import { Folder, FolderOpen, FileText, Menu, ChevronLeft, ChevronRight, Home } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Folder, FolderOpen, FileText, Menu, ChevronLeft, ChevronRight, Home, FolderIcon, Settings } from 'lucide-react';
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu';
 
-const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggleFolder, level = 0 }) => {
+const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggleFolder, level = 0, availableEditors }) => {
   const isExpanded = expandedFolders.has(item.path);
   const isSelected = selectedFile === item.path;
 
@@ -13,6 +23,68 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
     }
   };
 
+  const handleOpenInExplorer = async (e) => {
+    if (e) e.preventDefault();
+    await window.electronAPI.openInExplorer(item.path);
+  };
+
+  const handleOpenInEditor = async (editorKey) => {
+    await window.electronAPI.openInEditor(item.path, 1, editorKey);
+  };
+
+  const handleOpenConfigFile = async () => {
+    await window.electronAPI.openConfigFile();
+  };
+
+  if (item.type === 'file') {
+    return (
+      <div className="file-tree-item-container">
+        <ContextMenu>
+          <ContextMenuTrigger>
+            <div
+              className={`file-tree-item ${isSelected ? 'selected' : ''}`}
+              onClick={handleClick}
+              style={{ paddingLeft: `${level * 16 + 8}px` }}
+            >
+              <span className="file-tree-icon">
+                <FileText size={16} />
+              </span>
+              <span className="file-tree-name">{item.name}</span>
+            </div>
+          </ContextMenuTrigger>
+          <ContextMenuContent>
+            <ContextMenuItem onClick={handleOpenInExplorer}>
+              <FolderIcon size={16} />
+              Open in File Explorer
+            </ContextMenuItem>
+            <ContextMenuSub>
+              <ContextMenuSubTrigger>
+                <FileText size={16} />
+                Open in...
+              </ContextMenuSubTrigger>
+              <ContextMenuSubContent>
+                {availableEditors.length > 0 ? (
+                  availableEditors.map((editor) => (
+                    <ContextMenuItem key={editor.key} onClick={() => handleOpenInEditor(editor.key)}>
+                      {editor.name}
+                    </ContextMenuItem>
+                  ))
+                ) : (
+                  <ContextMenuItem disabled>No editors available</ContextMenuItem>
+                )}
+              </ContextMenuSubContent>
+            </ContextMenuSub>
+            <ContextMenuSeparator />
+            <ContextMenuItem onClick={handleOpenConfigFile}>
+              <Settings size={16} />
+              Configure Editors...
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+      </div>
+    );
+  }
+
   return (
     <div className="file-tree-item-container">
       <div
@@ -21,7 +93,7 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
         style={{ paddingLeft: `${level * 16 + 8}px` }}
       >
         <span className="file-tree-icon">
-          {item.type === 'directory' ? (isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />) : <FileText size={16} />}
+          {isExpanded ? <FolderOpen size={16} /> : <Folder size={16} />}
         </span>
         <span className="file-tree-name">{item.name}</span>
       </div>
@@ -36,6 +108,7 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
               expandedFolders={expandedFolders}
               toggleFolder={toggleFolder}
               level={level + 1}
+              availableEditors={availableEditors}
             />
           ))}
         </div>
@@ -46,6 +119,7 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
 
 const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSidebar, onNavigatePrev, onNavigateNext, onExitPreview, canNavigatePrev, canNavigateNext }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
+  const [availableEditors, setAvailableEditors] = useState([]);
 
   const toggleFolder = (folderPath) => {
     setExpandedFolders(prev => {
@@ -58,6 +132,16 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
       return newSet;
     });
   };
+
+  useEffect(() => {
+    const loadAvailableEditors = async () => {
+      const result = await window.electronAPI.detectAvailableEditors();
+      if (result.success) {
+        setAvailableEditors(result.editors);
+      }
+    };
+    loadAvailableEditors();
+  }, []);
 
   return (
     <>
@@ -100,6 +184,7 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
                 onFileSelect={onFileSelect}
                 expandedFolders={expandedFolders}
                 toggleFolder={toggleFolder}
+                availableEditors={availableEditors}
               />
             ))
           ) : (

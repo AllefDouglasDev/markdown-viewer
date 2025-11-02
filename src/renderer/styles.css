@@ -1,3 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+	:root {
+		--radius: 0.5rem;
+		--background: 0 0% 12%;
+		--foreground: 0 0% 83%;
+		--card: 0 0% 12%;
+		--card-foreground: 0 0% 83%;
+		--popover: 0 0% 12%;
+		--popover-foreground: 0 0% 83%;
+		--primary: 0 0% 94%;
+		--primary-foreground: 0 0% 12%;
+		--secondary: 0 0% 18%;
+		--secondary-foreground: 0 0% 94%;
+		--muted: 0 0% 18%;
+		--muted-foreground: 0 0% 63%;
+		--accent: 0 0% 18%;
+		--accent-foreground: 0 0% 94%;
+		--destructive: 0 63% 31%;
+		--destructive-foreground: 0 0% 94%;
+		--border: 0 0% 24%;
+		--input: 0 0% 24%;
+		--ring: 0 0% 94%;
+	}
+}
+
 * {
 	margin: 0;
 	padding: 0;
@@ -67,6 +96,26 @@ body {
 	word-break: break-all;
 	flex: 1;
 	min-width: 0;
+}
+
+.settings-button {
+	background-color: #2d2d2d;
+	border: 1px solid #3c3c3c;
+	color: #d4d4d4;
+	padding: 6px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.settings-button:hover {
+	background-color: #3c3c3c;
+	border-color: #58a6ff;
+	transform: scale(1.05);
 }
 
 .markdown-content {
@@ -411,6 +460,35 @@ body {
 	justify-content: center;
 	background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
 	padding: 20px;
+	position: relative;
+}
+
+.welcome-config-button {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	background-color: #2d2d2d;
+	border: 1px solid #3c3c3c;
+	color: #d4d4d4;
+	padding: 12px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-config-button:hover {
+	background-color: #3c3c3c;
+	border-color: #58a6ff;
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(88, 166, 255, 0.3);
+}
+
+.welcome-config-button:active {
+	transform: scale(0.98);
 }
 
 .welcome-content {
@@ -507,11 +585,29 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	color: #58a6ff;
 }
 
-.recent-file-path {
-	color: #d4d4d4;
+.recent-file-info {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow: hidden;
+	flex: 1;
+}
+
+.recent-file-name {
+	color: #f0f0f0;
 	font-size: 14px;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.recent-file-folder {
+	color: #858585;
+	font-size: 12px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -769,4 +865,80 @@ body {
 
 .welcome-button:active {
 	transform: translateY(0);
+}
+
+[data-radix-popper-content-wrapper] {
+	z-index: 9999 !important;
+}
+
+[data-slot="context-menu-content"] {
+	z-index: 9999 !important;
+	background-color: #2d2d2d;
+	border: 1px solid #3c3c3c;
+	border-radius: 6px;
+	padding: 4px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+	min-width: 200px;
+	animation: fadeIn 0.15s ease-out;
+}
+
+[data-slot="context-menu-item"],
+[data-slot="context-menu-sub-trigger"] {
+	color: #d4d4d4;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+	user-select: none;
+	outline: none;
+}
+
+[data-slot="context-menu-item"]:hover,
+[data-slot="context-menu-sub-trigger"]:hover {
+	background-color: #3c3c3c;
+	color: #f0f0f0;
+}
+
+[data-slot="context-menu-item"]:focus,
+[data-slot="context-menu-sub-trigger"]:focus {
+	background-color: #3c3c3c;
+	color: #f0f0f0;
+}
+
+[data-slot="context-menu-item"][data-disabled],
+[data-slot="context-menu-sub-trigger"][data-disabled] {
+	color: #666666;
+	pointer-events: none;
+	opacity: 0.5;
+}
+
+[data-slot="context-menu-separator"] {
+	height: 1px;
+	background-color: #3c3c3c;
+	margin: 4px 0;
+}
+
+[data-slot="context-menu-sub-content"] {
+	background-color: #2d2d2d;
+	border: 1px solid #3c3c3c;
+	border-radius: 6px;
+	padding: 4px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+	min-width: 180px;
+	animation: fadeIn 0.15s ease-out;
+}
+
+[data-slot="context-menu-sub-trigger"]::after {
+	content: '›';
+	margin-left: auto;
+	font-size: 18px;
+	color: #858585;
+}
+
+[data-slot="context-menu-sub-trigger"]:hover::after {
+	color: #d4d4d4;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Folder } from 'lucide-react';
+import { FileText, Folder, Settings } from 'lucide-react';
 
 function WelcomeScreen({ onFileSelected, onFolderSelected }) {
   const [recentFiles, setRecentFiles] = useState([]);
@@ -34,8 +34,26 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
     }
   };
 
+  const formatRecentPath = (fullPath) => {
+    const pathParts = fullPath.split('/');
+    const fileName = pathParts[pathParts.length - 1];
+    const parentFolder = pathParts[pathParts.length - 2] || '';
+    return { fileName, parentFolder };
+  };
+
+  const handleOpenConfigFile = async () => {
+    await window.electronAPI.openConfigFile();
+  };
+
   return (
     <div className="welcome-screen">
+      <button
+        className="welcome-config-button"
+        onClick={handleOpenConfigFile}
+        title="Configure Editors"
+      >
+        <Settings size={20} />
+      </button>
       <div className="welcome-content">
         <img
           src="../../build/icon.svg"
@@ -56,19 +74,28 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
 
         {recentFiles.length > 0 && (
           <div className="recent-files">
-            <h3>Recent Files</h3>
+            <h3>Recently Opened</h3>
             <ul className="recent-files-list">
-              {recentFiles.map((file, index) => (
-                <li key={index} className="recent-file-item">
-                  <button
-                    className="recent-file-button"
-                    onClick={() => handleRecentFileClick(file)}
-                  >
-                    <span className="recent-file-icon"><FileText size={16} /></span>
-                    <span className="recent-file-path">{file}</span>
-                  </button>
-                </li>
-              ))}
+              {recentFiles.map((file, index) => {
+                const { fileName, parentFolder } = formatRecentPath(file);
+                return (
+                  <li key={index} className="recent-file-item">
+                    <button
+                      className="recent-file-button"
+                      onClick={() => handleRecentFileClick(file)}
+                      title={file}
+                    >
+                      <span className="recent-file-icon">
+                        {file.endsWith('.md') ? <FileText size={16} /> : <Folder size={16} />}
+                      </span>
+                      <div className="recent-file-info">
+                        <span className="recent-file-name">{fileName}</span>
+                        {parentFolder && <span className="recent-file-folder">{parentFolder}</span>}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}

@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkGemoji from 'remark-gemoji';
 import rehypeHighlight from 'rehype-highlight';
 import { visit } from 'unist-util-visit';
-import { Check, AlertTriangle, ChevronLeft } from 'lucide-react';
+import { Check, AlertTriangle, ChevronLeft, Settings } from 'lucide-react';
 import MermaidChart from './MermaidChart';
 import WelcomeScreen from './WelcomeScreen';
 import FileTree from './FileTree';
@@ -208,6 +208,10 @@ function App() {
     setCursorLine(null);
   };
 
+  const handleOpenConfigFile = async () => {
+    await window.electronAPI.openConfigFile();
+  };
+
   const loadMarkdownFile = async () => {
     try {
       const result = await window.electronAPI.getMarkdownFile();
@@ -333,6 +337,13 @@ function App() {
             <Check size={16} /> Updated at {lastUpdated}
           </div>
         )}
+        <button
+          className="settings-button"
+          onClick={handleOpenConfigFile}
+          title="Configure Editors"
+        >
+          <Settings size={16} />
+        </button>
       </div>
       {error && !markdown ? (
         <div className="error-page">

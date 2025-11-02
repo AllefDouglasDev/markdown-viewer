@@ -1,8 +1,10 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const chokidar = require('chokidar');
 const { autoUpdater } = require('electron-updater');
+const { spawn, exec } = require('child_process');
+const config = require('./config');
 
 let mainWindow;
 let filePath = null;
@@ -348,7 +350,6 @@ ipcMain.handle('navigate-to-file', (_event, targetPath) => {
 
   if (result.success) {
     watchFile(filePath);
-    addRecentFile(filePath);
   }
 
   return result;
@@ -419,7 +420,83 @@ ipcMain.handle('open-folder-dialog', async () => {
 
   if (treeResult.success) {
     watchDirectory(selectedPath);
+    addRecentFile(selectedPath);
   }
 
   return treeResult;
+});
+
+ipcMain.handle('open-in-explorer', async (_event, targetPath) => {
+  try {
+    shell.showItemInFolder(targetPath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('open-in-editor', async (_event, targetPath, line, editorType) => {
+  try {
+    const editorConfig = config.readConfig();
+    const editorKey = editorType || editorConfig.editor.type;
+    const preset = editorConfig.editorPresets[editorKey];
+
+    if (!preset) {
+      return { success: false, error: 'Editor preset not found' };
+    }
+
+    if (preset.useShell) {
+      await shell.openPath(targetPath);
+      return { success: true };
+    }
+
+    const lineNumber = line || 1;
+    const args = preset.args.map(arg =>
+      arg.replace('{file}', targetPath).replace('{line}', lineNumber)
+    );
+
+    if (preset.terminal) {
+      if (process.platform === 'darwin') {
+        const command = `${preset.command} ${args.join(' ')}`;
+        exec(`osascript -e 'tell app "Terminal" to do script "${command}"'`);
+      } else if (process.platform === 'win32') {
+        spawn('cmd.exe', ['/c', 'start', preset.command, ...args]);
+      } else {
+        spawn('x-terminal-emulator', ['-e', preset.command, ...args]);
+      }
+    } else {
+      spawn(preset.command, args, { detached: true, stdio: 'ignore' });
+    }
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-editor-config', () => {
+  try {
+    return { success: true, config: config.readConfig() };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('open-config-file', async () => {
+  try {
+    const configPath = config.getConfigPath();
+    await shell.openPath(configPath);
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('detect-available-editors', async () => {
+  try {
+    const editors = await config.detectAvailableEditors();
+    return { success: true, editors };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
 });

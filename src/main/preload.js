@@ -10,4 +10,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addRecentFile: (filePath) => ipcRenderer.invoke('add-recent-file', filePath),
   getDirectoryTree: (rootPath) => ipcRenderer.invoke('get-directory-tree', rootPath),
   openFolderDialog: () => ipcRenderer.invoke('open-folder-dialog'),
+  openInExplorer: (filePath) => ipcRenderer.invoke('open-in-explorer', filePath),
+  openInEditor: (filePath, line, editorType) => ipcRenderer.invoke('open-in-editor', filePath, line, editorType),
+  getEditorConfig: () => ipcRenderer.invoke('get-editor-config'),
+  openConfigFile: () => ipcRenderer.invoke('open-config-file'),
+  detectAvailableEditors: () => ipcRenderer.invoke('detect-available-editors'),
 });

@@ -24,12 +24,15 @@ module.exports = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
+        use: ['style-loader', 'css-loader', 'postcss-loader'],
       },
     ],
   },
   resolve: {
     extensions: ['.js', '.jsx', '.mjs'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/renderer'),
+    },
     fallback: {
       "path": require.resolve("path-browserify"),
       "process": require.resolve("process/browser"),

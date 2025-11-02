@@ -28,9 +28,18 @@ function WelcomeScreen({ onFileSelected, onFolderSelected }) {
   };
 
   const handleRecentFileClick = async (filePath) => {
-    const result = await window.electronAPI.navigateToFile(filePath);
-    if (result.success) {
-      onFileSelected(result);
+    const isDirectory = !filePath.endsWith('.md');
+
+    if (isDirectory) {
+      const result = await window.electronAPI.getDirectoryTree(filePath);
+      if (result.success && onFolderSelected) {
+        onFolderSelected(result);
+      }
+    } else {
+      const result = await window.electronAPI.navigateToFile(filePath);
+      if (result.success) {
+        onFileSelected(result);
+      }
     }
   };
 

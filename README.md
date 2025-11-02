@@ -1,67 +1,104 @@
-# Markdown Renderer - Electron App
+# Markify - Markdown Viewer
 
-Aplicação Electron para renderizar arquivos Markdown em uma janela nativa, acessível via linha de comando.
+A lightweight, elegant Electron application for rendering and previewing Markdown files with live reload, file navigation, and powerful features.
 
-## Tecnologias
+> 📖 **New to Markify?** Check out the [complete usage guide](./HOW_TO_USE.md) for detailed instructions on all features.
 
-- **Electron**: Framework para aplicações desktop
-- **React**: Biblioteca para UI
-- **react-markdown**: Renderização de Markdown com suporte a plugins
-- **remark-gfm**: GitHub Flavored Markdown
-- **remark-gemoji**: Suporte a emojis com shortcodes
-- **rehype-highlight**: Syntax highlighting para código
-- **Mermaid**: Renderização de diagramas e gráficos
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-lightgrey)
 
-## Instalação
+## 📸 Screenshots
+
+### Welcome Screen
+Beautiful welcome screen with recently opened files and quick access to settings.
+
+### File Navigation
+- File tree sidebar for easy navigation
+- Context menu with "Open in File Explorer" and "Open in Editor" options
+- History navigation (back/forward buttons)
+
+### Live Preview
+- Real-time markdown rendering
+- Syntax highlighting for code blocks
+- Mermaid diagram support
+- Update indicator when file changes
+
+### Editor Integration
+- Right-click any file to open in your favorite editor
+- Support for VS Code, Cursor, Vim, Neovim, and more
+- Configurable via JSON file
+- Auto-detection of installed editors
+
+## Tech Stack
+
+- **Electron 38**: Desktop framework
+- **React 19**: UI library with modern hooks
+- **shadcn/ui**: Component library for elegant UI elements
+- **Tailwind CSS**: Utility-first CSS framework
+- **react-markdown 10**: Markdown renderer with plugin support
+- **remark-gfm**: GitHub Flavored Markdown support
+- **remark-gemoji**: Emoji shortcode support (`:rocket:` → 🚀)
+- **rehype-highlight**: Syntax highlighting for code blocks
+- **Mermaid 11**: Diagram and chart rendering
+- **chokidar**: Reliable cross-platform file watching
+- **lucide-react**: Beautiful icon library
+- **Webpack 5**: Module bundler
+
+## 🚀 Quick Start
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone https://github.com/AllefDouglasDev/markdown-viewer.git
+cd markdown-viewer
+
+# Install dependencies
 npm install
-```
 
-## Uso
-
-### Pré-requisito: Build do Webpack
-
-Antes de usar a aplicação, compile o código React:
-
-```bash
+# Build the application
 npm run webpack
 ```
 
-### Modo 1: Teste Rápido
+### Usage
 
+#### 1. Quick Test
 ```bash
 npm test
-# Ou diretamente:
-npm start example.md
+# Opens example.md
 ```
 
-### Modo 2: CLI Wrapper
-
+#### 2. CLI Usage
 ```bash
-./bin/md example.md
+./bin/md path/to/your/file.md
 ```
 
-### Modo 3: Instalação Global
-
+#### 3. Global Installation (Recommended)
 ```bash
 npm link
-md /caminho/para/arquivo.md
+md ~/Documents/README.md
 ```
 
-### Modo Desenvolvimento (com Hot Reload)
+#### 4. From Neovim
+Add to your `init.vim` or `init.lua`:
+```lua
+vim.keymap.set('n', '<leader>mp', ':!md %<CR>', { desc = 'Markdown Preview' })
+```
 
-**Terminal 1** - Webpack Dev Server:
+### Development Mode
+
+**Terminal 1** - Webpack watcher:
 ```bash
 npm run webpack:watch
 ```
 
-**Terminal 2** - Electron:
+**Terminal 2** - Electron with DevTools:
 ```bash
-npm run dev example.md
+npm run dev
 ```
 
-**Importante:** O modo dev (`--dev` flag) tenta carregar de `localhost:8080`. Use apenas se estiver rodando o webpack-dev-server.
+This opens the app with DevTools for debugging.
 
 ## Troubleshooting
 
@@ -102,17 +139,46 @@ markdown/
 └── package.json
 ```
 
-## Funcionalidades
+## ✨ Features
 
-- ✅ Renderização de Markdown com GitHub Flavored Markdown
-- ✅ Syntax highlighting para blocos de código
-- ✅ Live reload (atualiza automaticamente quando o arquivo muda)
-- ✅ Suporte a emojis (`:rocket:` → 🚀)
-- ✅ **Diagramas Mermaid** (flowcharts, diagramas de sequência, diagramas de classe, Gantt, etc.)
-- ✅ Tema dark mode
-- ✅ Suporte a tabelas, listas, task lists, links, imagens
-- ✅ Comando CLI para abrir arquivos
-- ✅ Indicador visual de atualização
+### Core Functionality
+- ✅ **Live Reload**: Instant updates when files change
+- ✅ **File Tree Navigation**: Browse and open multiple markdown files
+- ✅ **History Navigation**: Back/forward through opened files
+- ✅ **Internal Links**: Navigate between markdown files seamlessly
+- ✅ **External Links**: Opens in browser with `target="_blank"`
+- ✅ **CLI Support**: Open files from terminal (`md file.md`)
+
+### Markdown Rendering
+- ✅ **GitHub Flavored Markdown**: Tables, task lists, strikethrough
+- ✅ **Syntax Highlighting**: 100+ programming languages
+- ✅ **Emoji Support**: Shortcodes like `:rocket:` → 🚀
+- ✅ **Mermaid Diagrams**: Flowcharts, sequence diagrams, Gantt charts, etc.
+- ✅ **Math Support**: (Coming soon)
+
+### User Interface
+- ✅ **Dark Theme**: Beautiful, readable dark mode
+- ✅ **Context Menu**: Right-click files for quick actions
+- ✅ **Recently Opened**: Quick access to recent files and folders
+- ✅ **Sidebar Toggle**: Show/hide file tree
+- ✅ **Update Indicator**: Visual feedback when file changes
+- ✅ **Settings Button**: Quick access to configuration
+
+### Editor Integration
+- ✅ **Open in File Explorer**: Right-click to reveal in Finder/Explorer
+- ✅ **Open in Editor**: Launch files in your favorite editor
+- ✅ **Multiple Editor Support**: VS Code, Cursor, Vim, Neovim, and more
+- ✅ **Custom Editors**: Add your own via JSON configuration
+- ✅ **Line Number Support**: Jump to specific lines in editors
+- ✅ **Auto-Detection**: Automatically finds installed editors
+
+### Advanced Features
+- ✅ **Directory Watching**: Monitors folder changes in real-time
+- ✅ **Neovim Integration**: Cursor position sync
+- ✅ **Cross-Platform**: macOS, Windows, Linux
+- ✅ **Auto-Update**: Built-in update checker (via GitHub Releases)
+
+> 📖 For detailed usage instructions, see [HOW_TO_USE.md](./HOW_TO_USE.md)
 
 ## Diagramas Mermaid
 
@@ -139,6 +205,83 @@ graph TD
 - **ER Diagrams**: Diagramas entidade-relacionamento (`erDiagram`)
 
 Veja exemplos completos em `mermaid-example.md`.
+
+## ⚙️ Configuration
+
+### Editor Settings
+
+Markify stores editor preferences in a JSON configuration file:
+
+**Location:**
+- macOS: `~/Library/Application Support/Markify/markify-config.json`
+- Windows: `%APPDATA%/Markify/markify-config.json`
+- Linux: `~/.config/Markify/markify-config.json`
+
+**Access:**
+- Click the ⚙️ settings button on the welcome screen
+- Click the ⚙️ button in the header when viewing a file
+- Right-click a file → "Configure Editors..."
+
+**Default Configuration:**
+```json
+{
+  "version": "1.0",
+  "editor": {
+    "type": "system",
+    "supportLineNumbers": true
+  },
+  "editorPresets": {
+    "vscode": {
+      "command": "code",
+      "args": ["--goto", "{file}:{line}"],
+      "name": "VS Code"
+    },
+    "vim": {
+      "command": "vim",
+      "args": ["+{line}", "{file}"],
+      "terminal": true,
+      "name": "Vim"
+    }
+  }
+}
+```
+
+### Adding Custom Editors
+
+Add your favorite editor to the configuration:
+
+```json
+{
+  "editorPresets": {
+    "sublime": {
+      "command": "subl",
+      "args": ["{file}:{line}"],
+      "name": "Sublime Text"
+    }
+  }
+}
+```
+
+**Placeholders:**
+- `{file}` - Full path to the file
+- `{line}` - Line number (defaults to 1)
+
+See [HOW_TO_USE.md](./HOW_TO_USE.md#5-editor-configuration) for complete configuration details.
+
+## 🔗 Context Menu Features
+
+Right-click any file in the file tree sidebar to:
+
+1. **Open in File Explorer** - Reveals the file in Finder/Explorer
+2. **Open in...** - Submenu with all detected editors:
+   - System Default
+   - VS Code
+   - Cursor
+   - Vim/Neovim
+   - And more...
+3. **Configure Editors...** - Opens the configuration file
+
+All editors are automatically detected on your system!
 
 ## Build e Distribuição
 
@@ -184,26 +327,67 @@ Coloque os ícones na pasta `build/`:
 
 Veja `build/README.md` para mais detalhes sobre geração de ícones.
 
-## Integração com Neovim
+## 🔥 Neovim Integration
 
-Adicione ao seu `init.vim` ou `init.lua`:
+Markify has special integration with Neovim for an enhanced workflow:
 
+### Basic Setup
+
+Add to your `init.vim`:
 ```vim
-" Abrir preview do Markdown
 nnoremap <leader>mp :!md %<CR>
 ```
 
-Ou em Lua:
-
+Or `init.lua`:
 ```lua
 vim.keymap.set('n', '<leader>mp', ':!md %<CR>', { desc = 'Markdown Preview' })
 ```
 
-## Versionamento
+### Advanced: Cursor Position Sync
 
-O aplicativo segue [Semantic Versioning](https://semver.org/):
-- **Major**: Mudanças incompatíveis na API
-- **Minor**: Novas funcionalidades compatíveis
-- **Patch**: Correções de bugs
+Markify can read Neovim metadata to jump to the cursor position:
 
-Versão atual: **1.0.0**
+```vim
+" Save cursor position in markdown metadata
+function! SaveMarkdownMetadata()
+  let l:line = line('.')
+  let l:path = expand('%:p')
+  call writefile([
+        \ '<!-- nvim-metadata',
+        \ 'cursor-line: ' . l:line,
+        \ 'real-path: ' . l:path,
+        \ '-->',
+        \ ''], expand('%'), 'b')
+endfunction
+
+autocmd BufWritePre *.md call SaveMarkdownMetadata()
+```
+
+Now when you open a file from Markify in Neovim, it will:
+- Jump to the cursor position
+- Scroll to the relevant section
+
+## 📚 Documentation
+
+- **[HOW_TO_USE.md](./HOW_TO_USE.md)** - Complete user guide with all features
+- **[CLAUDE.md](./CLAUDE.md)** - Technical documentation for developers
+- **[mermaid-example.md](./mermaid-example.md)** - Mermaid diagram examples
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+MIT License - see LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- Built with [Electron](https://www.electronjs.org/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Icons from [Lucide](https://lucide.dev/)
+- Markdown rendering by [react-markdown](https://github.com/remarkjs/react-markdown)
+
+---
+
+**Made with ❤️ by [Allef Douglas](https://github.com/AllefDouglasDev)**

@@ -1,6 +1,6 @@
 {
   "name": "markdown-electron-viewer",
-  "version": "1.0.0",
+  "version": "1.3.0",
   "main": "src/main/index.js",
   "description": "Markify - Lightweight Electron app for live Markdown preview from CLI with auto-reload, emoji support, and syntax highlighting",
   "repository": {

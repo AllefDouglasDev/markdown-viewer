@@ -1,44 +1,31 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
-    </linearGradient>
-    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
-      <feOffset dx="0" dy="4" result="offsetblur"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.3"/>
-      </feComponentTransfer>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-
-  <!-- Background circle with gradient -->
-  <circle cx="512" cy="512" r="480" fill="url(#gradient)"/>
-
-  <!-- Document shape -->
-  <g filter="url(#shadow)">
-    <rect x="256" y="200" width="512" height="624" rx="40" fill="white" opacity="0.95"/>
-
-    <!-- Top bar (header) -->
-    <rect x="256" y="200" width="512" height="120" rx="40" fill="white" opacity="0.2"/>
-
-    <!-- Markdown symbol "M" -->
-    <path d="M 340 420 L 340 660 L 420 660 L 420 540 L 480 620 L 540 540 L 540 660 L 620 660 L 620 420 L 540 420 L 480 520 L 420 420 Z" fill="url(#gradient)"/>
-
-    <!-- Arrow down symbol -->
-    <g>
-      <rect x="655" y="480" width="60" height="120" rx="8" fill="url(#gradient)"/>
-      <path d="M 685 640 L 685 640 L 745 560 L 625 560 Z" fill="url(#gradient)"/>
-    </g>
-  </g>
-
-  <!-- Decorative lines on document -->
-  <rect x="340" y="720" width="344" height="12" rx="6" fill="url(#gradient)" opacity="0.2"/>
-  <rect x="340" y="752" width="280" height="12" rx="6" fill="url(#gradient)" opacity="0.15"/>
-  <rect x="340" y="784" width="220" height="12" rx="6" fill="url(#gradient)" opacity="0.1"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect x="30.72" y="30.72" width="962.56" height="962.56" rx="204.8" fill="#000000"/>
+  <rect x="51.2" y="51.2" width="921.5999999999999" height="921.5999999999999" rx="184.32000000000002" fill="#ffffff"/>
+  <rect x="174.08" y="296.96" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="296.96" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="296.96" width="184.32" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="358.4" width="122.88" height="61.44" fill="#000000"/>
+  <rect x="358.4" y="358.4" width="122.88" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="358.4" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="727.04" y="358.4" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="419.84" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="296.96" y="419.84" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="419.84" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="419.84" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="788.48" y="419.84" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="481.28" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="481.28" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="481.28" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="788.48" y="481.28" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="542.72" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="542.72" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="542.72" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="788.48" y="542.72" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="604.16" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="604.16" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="604.16" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="727.04" y="604.16" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="174.08" y="665.6" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="419.84" y="665.6" width="61.44" height="61.44" fill="#000000"/>
+  <rect x="542.72" y="665.6" width="184.32" height="61.44" fill="#000000"/>
 </svg>

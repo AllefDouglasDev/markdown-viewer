@@ -3,18 +3,25 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
-// Get the file path argument (optional)
-const filePath = process.argv[2];
+const target = process.argv[2];
 
-// Get the path to the Electron executable
 const electronPath = require('electron');
 const appPath = path.join(__dirname, '..');
 
-// Launch Electron with or without file path
-const args = filePath ? [appPath, filePath] : [appPath];
+const args = [appPath];
+const env = { ...process.env };
+
+if (target) {
+  const resolvedTarget = path.resolve(process.cwd(), target);
+  args.push(resolvedTarget);
+  env.MD_TARGET = resolvedTarget;
+}
+
 const child = spawn(electronPath, args, {
   stdio: 'ignore',
   detached: true,
+  cwd: process.cwd(),
+  env,
 });
 
 child.unref();

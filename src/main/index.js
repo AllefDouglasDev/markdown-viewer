@@ -4,14 +4,51 @@ const fs = require('fs');
 const chokidar = require('chokidar');
 const { autoUpdater } = require('electron-updater');
 const { spawn, exec } = require('child_process');
+
+const APP_NAME = 'Markify';
+const LEGACY_APP_NAME = 'markdown-electron-viewer';
+
+app.setName(APP_NAME);
+migrateLegacyUserData();
+
 const config = require('./config');
+
+function migrateLegacyUserData() {
+  try {
+    const userDataPath = app.getPath('userData');
+    const legacyPath = path.join(path.dirname(userDataPath), LEGACY_APP_NAME);
+
+    if (userDataPath === legacyPath || !fs.existsSync(legacyPath)) return;
+
+    for (const fileName of ['markify-config.json', 'recent-files.json']) {
+      const source = path.join(legacyPath, fileName);
+      const destination = path.join(userDataPath, fileName);
+
+      if (!fs.existsSync(source) || fs.existsSync(destination)) continue;
+
+      fs.mkdirSync(userDataPath, { recursive: true });
+      fs.copyFileSync(source, destination);
+    }
+  } catch (error) {
+    console.error('Could not migrate user data:', error.message);
+  }
+}
 
 let mainWindow;
 let filePath = null;
+let rootPath = null;
 let fileWatcher = null;
 let directoryWatcher = null;
+let selfWritePath = null;
+let selfWriteUntil = 0;
+
+const TASK_ITEM_PATTERN = /^(\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[)([ xX])(\])/;
 
 const recentFilesPath = path.join(app.getPath('userData'), 'recent-files.json');
+const appIconPath = path.join(__dirname, '../../build/icon.png');
+
+const MAX_TREE_DEPTH = 5;
+const IGNORED_DIRECTORIES = new Set(['node_modules']);
 
 function getRecentFiles() {
   try {
@@ -47,6 +84,7 @@ function createWindow() {
     width: 1200,
     height: 800,
     show: false,
+    icon: fs.existsSync(appIconPath) ? appIconPath : undefined,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
@@ -67,6 +105,23 @@ function createWindow() {
     const distPath = path.join(__dirname, '../../dist/index.html');
     mainWindow.loadFile(distPath);
   }
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown') return;
+
+    const modifier = process.platform === 'darwin' ? input.meta : input.control;
+    if (!modifier) return;
+
+    let delta = null;
+    if (input.key === '+' || input.key === '=') delta = 1;
+    else if (input.key === '-' || input.key === '_') delta = -1;
+    else if (input.key === '0') delta = 0;
+
+    if (delta === null) return;
+
+    event.preventDefault();
+    mainWindow.webContents.send('content-zoom', delta);
+  });
 
   mainWindow.on('closed', () => {
     if (fileWatcher) {
@@ -123,18 +178,33 @@ function readDirectoryTree(dirPath) {
       return { success: false, error: 'Path is not a directory' };
     }
 
-    function buildTree(currentPath) {
-      const items = fs.readdirSync(currentPath);
+    function buildTree(currentPath, depth = 0) {
+      if (depth > MAX_TREE_DEPTH) return [];
+
+      let items;
+      try {
+        items = fs.readdirSync(currentPath);
+      } catch {
+        return [];
+      }
+
       const tree = [];
 
       for (const item of items) {
         if (item.startsWith('.')) continue;
+        if (IGNORED_DIRECTORIES.has(item)) continue;
 
         const itemPath = path.join(currentPath, item);
-        const itemStats = fs.statSync(itemPath);
+
+        let itemStats;
+        try {
+          itemStats = fs.statSync(itemPath);
+        } catch {
+          continue;
+        }
 
         if (itemStats.isDirectory()) {
-          const children = buildTree(itemPath);
+          const children = buildTree(itemPath, depth + 1);
 
           if (children.length > 0) {
             tree.push({
@@ -184,6 +254,10 @@ function watchFile(filePath) {
   });
 
   fileWatcher.on('change', () => {
+    if (selfWritePath === filePath && Date.now() < selfWriteUntil) {
+      return;
+    }
+
     const result = loadMarkdownFile(filePath);
     if (result.success && mainWindow) {
       mainWindow.webContents.send('markdown-updated', result.content);
@@ -279,19 +353,52 @@ function checkForUpdates() {
   autoUpdater.checkForUpdates();
 }
 
-app.whenReady().then(() => {
-  const args = process.argv.slice(1);
-
-  const fileArg = args.find(arg => !arg.startsWith('--') && arg.endsWith('.md'));
-
-  if (fileArg) {
-    filePath = path.resolve(fileArg);
-
-    if (!fs.existsSync(filePath)) {
-      console.error('File not found:', filePath);
-      filePath = null;
+function resolveTargetPath() {
+  if (process.env.MD_TARGET) {
+    const envTarget = path.resolve(process.env.MD_TARGET);
+    if (fs.existsSync(envTarget)) {
+      return envTarget;
     }
+    console.error('Path not found:', envTarget);
+    return null;
   }
+
+  const appDir = path.resolve(app.getAppPath());
+
+  for (const arg of process.argv.slice(1)) {
+    if (arg.startsWith('-')) continue;
+
+    const resolved = path.resolve(arg);
+    if (resolved === appDir) continue;
+    if (fs.existsSync(resolved)) return resolved;
+  }
+
+  return null;
+}
+
+function applyTargetPath(targetPath) {
+  if (!targetPath) return;
+
+  if (fs.statSync(targetPath).isDirectory()) {
+    rootPath = targetPath;
+
+    const treeResult = readDirectoryTree(rootPath);
+    if (treeResult.success && treeResult.defaultFile) {
+      filePath = treeResult.defaultFile;
+    }
+    return;
+  }
+
+  filePath = targetPath;
+  rootPath = path.dirname(targetPath);
+}
+
+app.whenReady().then(() => {
+  if (process.platform === 'darwin' && app.dock && fs.existsSync(appIconPath)) {
+    app.dock.setIcon(appIconPath);
+  }
+
+  applyTargetPath(resolveTargetPath());
 
   createWindow();
 
@@ -355,6 +462,38 @@ ipcMain.handle('navigate-to-file', (_event, targetPath) => {
   return result;
 });
 
+ipcMain.handle('toggle-checkbox', (_event, targetPath, line, checked) => {
+  try {
+    const target = targetPath || filePath;
+
+    if (!target || !fs.existsSync(target)) {
+      return { success: false, error: 'File not found' };
+    }
+
+    const index = Number(line) - 1;
+    const content = fs.readFileSync(target, 'utf-8');
+    const lines = content.split('\n');
+
+    if (!Number.isInteger(index) || index < 0 || index >= lines.length) {
+      return { success: false, error: `Line ${line} is out of range` };
+    }
+
+    if (!TASK_ITEM_PATTERN.test(lines[index])) {
+      return { success: false, error: `No checkbox found at line ${line}` };
+    }
+
+    lines[index] = lines[index].replace(TASK_ITEM_PATTERN, `$1${checked ? 'x' : ' '}$3`);
+
+    selfWritePath = target;
+    selfWriteUntil = Date.now() + 1000;
+    fs.writeFileSync(target, lines.join('\n'), 'utf-8');
+
+    return { success: true, line: Number(line), checked };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
 ipcMain.handle('open-file-dialog', async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
@@ -369,6 +508,7 @@ ipcMain.handle('open-file-dialog', async () => {
 
   const selectedPath = result.filePaths[0];
   filePath = selectedPath;
+  rootPath = path.dirname(selectedPath);
 
   const fileResult = loadMarkdownFile(filePath);
 
@@ -388,8 +528,8 @@ ipcMain.handle('add-recent-file', (_event, file) => {
   return addRecentFile(file);
 });
 
-ipcMain.handle('get-directory-tree', (_event, rootPath) => {
-  let dirPath = rootPath;
+ipcMain.handle('get-directory-tree', (_event, requestedPath) => {
+  let dirPath = requestedPath || rootPath;
 
   if (!dirPath && filePath) {
     dirPath = path.dirname(filePath);
@@ -400,6 +540,7 @@ ipcMain.handle('get-directory-tree', (_event, rootPath) => {
   const result = readDirectoryTree(dirPath);
 
   if (result.success) {
+    rootPath = dirPath;
     watchDirectory(dirPath);
   }
 
@@ -419,6 +560,7 @@ ipcMain.handle('open-folder-dialog', async () => {
   const treeResult = readDirectoryTree(selectedPath);
 
   if (treeResult.success) {
+    rootPath = selectedPath;
     watchDirectory(selectedPath);
     addRecentFile(selectedPath);
   }
@@ -526,9 +668,11 @@ ipcMain.handle('open-how-to-use', () => {
       filePath = readmePath;
       watchFile(readmePath);
 
-      const treeResult = readDirectoryTree(fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs'));
+      const docsRoot = fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs');
+      const treeResult = readDirectoryTree(docsRoot);
       if (treeResult.success) {
-        watchDirectory(fs.existsSync(docsPath) ? docsPath : path.join(app.getAppPath(), 'docs'));
+        rootPath = docsRoot;
+        watchDirectory(docsRoot);
       }
 
       return {

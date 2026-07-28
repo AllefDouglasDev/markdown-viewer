@@ -10,6 +10,7 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from '@/components/ui/context-menu';
+import Outline from './Outline';
 
 const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggleFolder, level = 0, availableEditors }) => {
   const isExpanded = expandedFolders.has(item.path);
@@ -117,9 +118,10 @@ const FileTreeItem = ({ item, selectedFile, onFileSelect, expandedFolders, toggl
   );
 };
 
-const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSidebar, onNavigatePrev, onNavigateNext, onExitPreview, canNavigatePrev, canNavigateNext }) => {
+const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSidebar, onNavigatePrev, onNavigateNext, onExitPreview, canNavigatePrev, canNavigateNext, outline, activeHeadingId, onHeadingSelect }) => {
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [availableEditors, setAvailableEditors] = useState([]);
+  const [activeTab, setActiveTab] = useState('files');
 
   const toggleFolder = (folderPath) => {
     setExpandedFolders(prev => {
@@ -174,8 +176,24 @@ const FileTree = ({ tree, selectedFile, onFileSelect, sidebarOpen, onToggleSideb
             </button>
           </div>
         </div>
+        <div className="sidebar-tabs">
+          <button
+            className={`sidebar-tab ${activeTab === 'files' ? 'active' : ''}`}
+            onClick={() => setActiveTab('files')}
+          >
+            Files
+          </button>
+          <button
+            className={`sidebar-tab ${activeTab === 'outline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('outline')}
+          >
+            Outline
+          </button>
+        </div>
         <div className="file-tree">
-          {tree && tree.length > 0 ? (
+          {activeTab === 'outline' ? (
+            <Outline headings={outline} activeId={activeHeadingId} onSelect={onHeadingSelect} />
+          ) : tree && tree.length > 0 ? (
             tree.map((item, index) => (
               <FileTreeItem
                 key={`${item.path}-${index}`}

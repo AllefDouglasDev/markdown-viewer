@@ -6,7 +6,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDirectoryTreeUpdated: (callback) => ipcRenderer.on('directory-tree-updated', (event, tree) => callback(tree)),
   onContentZoom: (callback) => ipcRenderer.on('content-zoom', (event, delta) => callback(delta)),
   navigateToFile: (targetPath) => ipcRenderer.invoke('navigate-to-file', targetPath),
-  toggleCheckbox: (targetPath, line, checked) => ipcRenderer.invoke('toggle-checkbox', targetPath, line, checked),
+  toggleCheckbox: (targetPath, line, checked, cell) => ipcRenderer.invoke('toggle-checkbox', targetPath, line, checked, cell),
   openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
   getRecentFiles: () => ipcRenderer.invoke('get-recent-files'),
   addRecentFile: (filePath) => ipcRenderer.invoke('add-recent-file', filePath),

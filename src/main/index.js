@@ -43,6 +43,7 @@ let selfWritePath = null;
 let selfWriteUntil = 0;
 
 const TASK_ITEM_PATTERN = /^(\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[)([ xX])(\])/;
+const ANY_CHECKBOX_PATTERN = /\[[ xX]\]/g;
 
 const recentFilesPath = path.join(app.getPath('userData'), 'recent-files.json');
 const appIconPath = path.join(__dirname, '../../build/icon.png');
@@ -462,7 +463,7 @@ ipcMain.handle('navigate-to-file', (_event, targetPath) => {
   return result;
 });
 
-ipcMain.handle('toggle-checkbox', (_event, targetPath, line, checked) => {
+ipcMain.handle('toggle-checkbox', (_event, targetPath, line, checked, cell) => {
   try {
     const target = targetPath || filePath;
 
@@ -478,11 +479,27 @@ ipcMain.handle('toggle-checkbox', (_event, targetPath, line, checked) => {
       return { success: false, error: `Line ${line} is out of range` };
     }
 
-    if (!TASK_ITEM_PATTERN.test(lines[index])) {
-      return { success: false, error: `No checkbox found at line ${line}` };
-    }
+    if (cell) {
+      const text = lines[index];
+      const mark = checked ? 'x' : ' ';
+      const start = Number(cell.column) - 1;
 
-    lines[index] = lines[index].replace(TASK_ITEM_PATTERN, `$1${checked ? 'x' : ' '}$3`);
+      if (start >= 0 && /^\[[ xX]\]$/.test(text.slice(start, start + 3))) {
+        lines[index] = `${text.slice(0, start)}[${mark}]${text.slice(start + 3)}`;
+      } else {
+        const fallback = [...text.matchAll(ANY_CHECKBOX_PATTERN)][Number(cell.index)];
+
+        if (!fallback) {
+          return { success: false, error: `No checkbox found at line ${line}` };
+        }
+
+        lines[index] = `${text.slice(0, fallback.index)}[${mark}]${text.slice(fallback.index + 3)}`;
+      }
+    } else if (!TASK_ITEM_PATTERN.test(lines[index])) {
+      return { success: false, error: `No checkbox found at line ${line}` };
+    } else {
+      lines[index] = lines[index].replace(TASK_ITEM_PATTERN, `$1${checked ? 'x' : ' '}$3`);
+    }
 
     selfWritePath = target;
     selfWriteUntil = Date.now() + 1000;

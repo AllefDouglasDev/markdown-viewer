@@ -26,6 +26,57 @@ function remarkLineNumbers() {
 }
 
 const TASK_ITEM_PATTERN = /^(\s*(?:>\s*)*(?:[-*+]|\d+[.)])\s+\[)([ xX])(\])/;
+const CELL_CHECKBOX_PATTERN = /^([ \t]*)\[([ xX])\]/;
+const ANY_CHECKBOX_PATTERN = /\[[ xX]\]/g;
+
+function remarkTableTaskCheckboxes() {
+  return (tree) => {
+    visit(tree, 'table', (table) => {
+      (table.children || []).forEach((row, rowIndex) => {
+        if (rowIndex === 0) return;
+
+        let checkboxIndex = 0;
+
+        for (const cell of row.children || []) {
+          const first = cell.children?.[0];
+          if (!first || first.type !== 'text' || !first.position) continue;
+
+          const match = first.value.match(CELL_CHECKBOX_PATTERN);
+          if (!match) continue;
+
+          const checkbox = {
+            type: 'tableTaskCheckbox',
+            data: {
+              hName: 'input',
+              hProperties: {
+                type: 'checkbox',
+                checked: match[2].toLowerCase() === 'x',
+                'data-checkbox-line': first.position.start.line,
+                'data-checkbox-column': first.position.start.column + match[1].length,
+                'data-checkbox-index': checkboxIndex,
+              },
+            },
+          };
+
+          const rest = first.value.slice(match[0].length).replace(/^[ \t]+/, '');
+
+          if (rest) {
+            first.value = rest;
+            cell.children.unshift(checkbox);
+          } else {
+            cell.children.splice(0, 1, checkbox);
+
+            if (!cell.data) cell.data = {};
+            if (!cell.data.hProperties) cell.data.hProperties = {};
+            cell.data.hProperties.className = ['task-cell'];
+          }
+
+          checkboxIndex++;
+        }
+      });
+    });
+  };
+}
 
 function rehypeTaskCheckboxLines() {
   return (tree) => {
@@ -112,6 +163,21 @@ function countTasks(node) {
   return { total, done };
 }
 
+function countCellTasks(node) {
+  let total = 0;
+  let done = 0;
+
+  visit(node, 'element', (child) => {
+    if (child.tagName !== 'input') return;
+    if (child.properties?.['data-checkbox-column'] === undefined) return;
+
+    total++;
+    if (child.properties.checked) done++;
+  });
+
+  return { total, done };
+}
+
 function toggleCheckboxInSource(source, line, checked) {
   const lines = source.split('\n');
   const index = line - 1;
@@ -120,6 +186,28 @@ function toggleCheckboxInSource(source, line, checked) {
   if (!TASK_ITEM_PATTERN.test(lines[index])) return source;
 
   lines[index] = lines[index].replace(TASK_ITEM_PATTERN, `$1${checked ? 'x' : ' '}$3`);
+  return lines.join('\n');
+}
+
+function toggleCellCheckboxInSource(source, line, cell, checked) {
+  const lines = source.split('\n');
+  const index = line - 1;
+
+  if (index < 0 || index >= lines.length) return source;
+
+  const text = lines[index];
+  const mark = checked ? 'x' : ' ';
+  const start = Number(cell?.column) - 1;
+
+  if (start >= 0 && /^\[[ xX]\]$/.test(text.slice(start, start + 3))) {
+    lines[index] = `${text.slice(0, start)}[${mark}]${text.slice(start + 3)}`;
+    return lines.join('\n');
+  }
+
+  const fallback = [...text.matchAll(ANY_CHECKBOX_PATTERN)][Number(cell?.index)];
+  if (!fallback) return source;
+
+  lines[index] = `${text.slice(0, fallback.index)}[${mark}]${text.slice(fallback.index + 3)}`;
   return lines.join('\n');
 }
 
@@ -809,11 +897,13 @@ function App() {
     return encodeURI(`file://${absolute.startsWith('/') ? '' : '/'}${absolute}`);
   };
 
-  const handleCheckboxToggle = async (line, checked) => {
+  const handleCheckboxToggle = async (line, checked, cell = null) => {
     if (!filePath || !line) return;
 
     const previous = markdown;
-    const next = toggleCheckboxInSource(previous, line, checked);
+    const next = cell
+      ? toggleCellCheckboxInSource(previous, line, cell, checked)
+      : toggleCheckboxInSource(previous, line, checked);
 
     if (next === previous) {
       setError(`No checkbox found at line ${line}`);
@@ -823,7 +913,7 @@ function App() {
     setMarkdown(next);
 
     try {
-      const result = await window.electronAPI.toggleCheckbox(filePath, line, checked);
+      const result = await window.electronAPI.toggleCheckbox(filePath, line, checked, cell);
       if (!result?.success) {
         setMarkdown(previous);
         setError(result?.error || 'Failed to save checkbox');
@@ -859,23 +949,47 @@ function App() {
 
   const renderedMarkdown = useMemo(() => (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, remarkGemoji, remarkLineNumbers]}
+      remarkPlugins={[remarkGfm, remarkTableTaskCheckboxes, remarkGemoji, remarkLineNumbers]}
       rehypePlugins={[rehypeHighlight, rehypeTaskCheckboxLines, rehypeHeadingSlugs]}
       components={{
         input({ node, type, checked, disabled, ...props }) {
           const line = Number(node?.properties?.['data-checkbox-line']);
+          const column = node?.properties?.['data-checkbox-column'];
 
           if (type !== 'checkbox' || !line) {
             return <input type={type} checked={checked} disabled={disabled} {...props} />;
           }
+
+          const cell = column === undefined
+            ? null
+            : { column: Number(column), index: Number(node.properties['data-checkbox-index']) };
 
           return (
             <input
               type="checkbox"
               className="task-checkbox"
               checked={checked === true}
-              onChange={(event) => handleCheckboxToggle(line, event.target.checked)}
+              onChange={(event) => handleCheckboxToggle(line, event.target.checked, cell)}
             />
+          );
+        },
+        table({ node, children, ...props }) {
+          const { total, done } = countCellTasks(node);
+
+          if (total < 2) {
+            return <table {...props}>{children}</table>;
+          }
+
+          return (
+            <div className="task-list-block">
+              <div className="task-progress">
+                <div className="task-progress-track">
+                  <div className="task-progress-fill" style={{ width: `${Math.round((done / total) * 100)}%` }} />
+                </div>
+                <span className="task-progress-label">{done}/{total} done</span>
+              </div>
+              <table {...props}>{children}</table>
+            </div>
           );
         },
         code({ node, inline, className, children, ...props }) {

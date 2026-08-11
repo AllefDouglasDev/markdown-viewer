@@ -325,6 +325,25 @@ body {
 	display: none;
 }
 
+.markdown-content td.task-cell {
+	text-align: center;
+	white-space: nowrap;
+}
+
+.markdown-content td .task-checkbox,
+.markdown-content th .task-checkbox {
+	margin: 0 6px 0 0;
+	vertical-align: middle;
+}
+
+.markdown-content td.task-cell .task-checkbox {
+	margin: 0;
+}
+
+.markdown-content .task-list-block > table {
+	margin-top: 0;
+}
+
 .code-block {
 	position: relative;
 	margin-bottom: 16px;
